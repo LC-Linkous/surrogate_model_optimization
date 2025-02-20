@@ -1,0 +1,260 @@
+# surrogate_model_optimization
+
+This repo features the core AntennaCAT optimizers with surrogate model capabilities. It is specifically for unit testing and development. 
+
+The original versions of the optimizers can be found at:
+| Base Optimizer | Alternate Version | Quantum-Inspired Optimizer | Surrogate Model Version |
+| ------------- | ------------- | ------------- |------------- |
+| [pso_python](https://github.com/LC-Linkous/pso_python) | [pso_basic](https://github.com/LC-Linkous/pso_python/tree/pso_basic) | [pso_quantum](https://github.com/LC-Linkous/pso_python/tree/pso_quantum)  | all versions are options in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization)|
+| [cat_swarm_python](https://github.com/LC-Linkous/cat_swarm_python) | [sand_cat_python](https://github.com/LC-Linkous/cat_swarm_python/tree/sand_cat_python)| [cat_swarm_quantum](https://github.com/LC-Linkous/cat_swarm_python/tree/cat_swarm_quantum) |all versions are options in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization) |
+| [chicken_swarm_python](https://github.com/LC-Linkous/chicken_swarm_python) | [2015_improved_chicken_swarm](https://github.com/LC-Linkous/chicken_swarm_python/tree/improved_chicken_swarm) <br>2022 improved chicken swarm| [chicken_swarm_quantum](https://github.com/LC-Linkous/chicken_swarm_python/tree/chicken_swarm_quantum)  | all versions are options in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization)|
+| [sweep_python](https://github.com/LC-Linkous/sweep_python)  | *alternates in base repo | -  | - |
+| [bayesian optimization_python](https://github.com/LC-Linkous/bayesian_optimization_python)  | -| - | *interchangeable surrogate models <br> included in base repo |- | - | multiGLODS option in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization)|
+
+
+
+The PSO optimizer is modified from the [pso_python](https://github.com/jonathan46000/pso_python) by [jonathan46000](https://github.com/jonathan46000), an adaptive timestep PSO optimizer, for data collection baseline. This repo removes the adaptive time modulation step of pso_python.
+
+The python-based MultiGLODS optimizer is from [multi_glods_python](https://github.com/jonathan46000/multi_glods_python) by [jonathan46000](https://github.com/jonathan46000). The [multi_glods_python](https://github.com/jonathan46000/multi_glods_python) repository is a Python translation of MATLAB MultiGLODS 0.1 (with random search method only). Please see the [MultiGLODS](#multiglods) and [Translation of MultiGLODS to Python](#translation-of-multiglods-to-python) sections for more information about the translation of the code and the original publication.
+
+The surrogate model approximators were originally featured in [bayesian_optimization_python](https://github.com/LC-Linkous/bayesian_optimization_python) by [LC-Linkous](https://github.com/LC-Linkous).  See [References](#references) for the running list of references as optimizers and surrogate models approximators are added/edited, and features are updated.
+
+
+## Table of Contents
+* [Requirements](#requirements)
+* [Implementation](#implementation)
+    * [Constraint Handling](#constraint-handling)
+    * [Internal Objective Function Examples](#internal-objective-function-examples)
+* [Example Testing](#example-implementations)
+* [References](#references)
+* [Publications and Integration](#publications-and-integration)
+
+
+## Requirements
+
+This project requires numpy and matplotlib. The original multi_glods_python does not require matplotlib or its dependencies.
+
+Use 'pip install -r requirements.txt' to install the following dependencies:
+
+```python
+numpy==2.2.3
+pandas==2.2.3
+python-dateutil==2.9.0.post0
+pytz==2025.1
+six==1.17.0
+tzdata==2025.1
+```
+
+For manual installation:
+
+```python
+pip install pandas 
+
+```
+
+
+
+## Implementation
+
+### Constraint Handling
+Users must create their own constraint function for their ptimization problems, if there are constraints beyond the problem bounds.  This is then passed into the constructor. If the default constraint function is used, it always returns true (which means there are no constraints).
+
+### Internal Objective Function Examples
+
+There are three functions included in the repository:
+1) Himmelblau's function, which takes 2 inputs and has 1 output
+2) A multi-objective function with 3 inputs and 2 outputs (see lundquist_3_var)
+3) A single-objective function with 1 input and 1 output (see one_dim_x_test)
+
+Each function has four files in a directory:
+   1) configs_F.py - contains imports for the objective function and constraints, CONSTANT assignments for functions and labeling, boundary ranges, the number of input variables, the number of output values, and the target values for the output
+   2) constr_F.py - contains a function with the problem constraints, both for the function and for error handling in the case of under/overflow. 
+   3) func_F.py - contains a function with the objective function.
+   4) graph.py - contains a script to graph the function for visualization.
+
+Other multi-objective functions can be applied to this project by following the same format (and several have been collected into a compatible library, and will be released in a separate repo)
+
+<p align="center">
+        <img src="https://github.com/LC-Linkous/pso_basic_multi_glods_surrogate/blob/main/media/himmelblau_plots.png" alt="Himmelblau function" height="250">
+</p>
+   <p align="center">Plotted Himmelblau Function with 3D Plot on the Left, and a 2D Contour on the Right</p>
+
+```math
+f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2
+```
+
+| Global Minima | Boundary | Constraints |
+|----------|----------|----------|
+| f(3, 2) = 0                 | $-5 \leq x,y \leq 5$  |   | 
+| f(-2.805118, 3.121212) = 0  | $-5 \leq x,y \leq 5$  |   | 
+| f(-3.779310, -3.283186) = 0 | $-5 \leq x,y \leq 5$  |   | 
+| f(3.584428, -1.848126) = 0  | $-5 \leq x,y \leq 5$   |   | 
+
+
+<p align="center">
+        <img src="https://github.com/LC-Linkous/pso_basic_multi_glods_surrogate/blob/main/media/lundquist_3var_plots.png" alt="Function Feasible Decision Space and Objective Space with Pareto Front" height="200">
+</p>
+   <p align="center">Plotted Multi-Objective Function Feasible Decision Space and Objective Space with Pareto Front</p>
+
+```math
+\text{minimize}: 
+\begin{cases}
+f_{1}(\mathbf{x}) = (x_1-0.5)^2 + (x_2-0.1)^2 \\
+f_{2}(\mathbf{x}) = (x_3-0.2)^4
+\end{cases}
+```
+
+| Num. Input Variables| Boundary | Constraints |
+|----------|----------|----------|
+| 3      | $0.21\leq x_1\leq 1$ <br> $0\leq x_2\leq 1$ <br> $0.1 \leq x_3\leq 0.5$  | $x_3\gt \frac{x_1}{2}$ or $x_3\lt 0.1$| 
+
+<p align="center">
+        <img src="https://github.com/LC-Linkous/pso_basic_multi_glods_surrogate/blob/main/media/1D_test_plots.png" alt="Function Feasible Decision Space and Objective Space with Pareto Front" height="200">
+</p>
+   <p align="center">Plotted Single Input, Single-objective Function Feasible Decision Space and Objective Space with Pareto Front</p>
+
+```math
+f(\mathbf{x}) = sin(5 * x^3) + cos(5 * x) * (1 - tanh(x^2))
+```
+| Num. Input Variables| Boundary | Constraints |
+|----------|----------|----------|
+| 1      | $0\leq x\leq 1$  | $0\leq x\leq 1$| |
+
+Local minima at $(0.444453, -0.0630916)$
+
+Global minima at $(0.974857, -0.954872)$
+
+## Example Testing
+
+Currently, `development_test.py` is the only file for testing multiple combinations of base optimizers, surrogate models, and linear approximators. 
+
+
+To choose one of the 3 included objective functions:
+The internal objective functions are included at the top of the file. Uncomment ONE of the functions to use it. If multiple imports are uncommented, the lowest function is the one the compiler will use.
+
+```python
+# OBJECTIVE FUNCTION SELECTION -UNCOMMENT HERE TO SELECT
+#import one_dim_x_test.configs_F as func_configs     # single objective, 1D input
+#import himmelblau.configs_F as func_configs         # single objective, 2D input
+import lundquist_3_var.configs_F as func_configs     # multi objective function
+```
+
+To select optimizers and approximators:
+
+```python
+        '''
+        BASE_OPT_CHOICE & SURROGATE_OPT_CHOICE  
+        0: pso_python            1: pso_basic                     2: pso_quantum
+        3: cat_swarm_python      4: sand_cat_python               5: cat_swarm_quantum
+        6: chicken_swarm_python  7: 2015_improved_chicken_swarm   8: chicken_swarm_quantum
+        9: multi_glods_python
+
+        NOTE: multi_glods_python canNOT (currently) be used as a base optimizer with 
+        a surrogate model optimizer. It can be used as the surrogate model optimizer.
+        All models CAN be used stand-alone without a surrogate model 
+        '''
+
+        '''
+        APPROXIMATOR_CHOICE
+        0: RBF      1: Gaussian Process         2: Kriging       3:Polynomial Regression
+        4: Polynomial Chaos Expansion  5: KNN regression   6: Decision Tree Regression
+        '''
+
+        BASE_OPT_CHOICE = 1
+        SURROGATE_OPT_CHOICE = 1
+        APPROXIMATOR_CHOICE = 2
+
+```
+
+Individual optimizer parameters currently need to be adjusted with optimizer creation. In the future, this will be more streamlined for unit testing.
+
+
+
+
+The internal objective functions are included at the top of the file. Uncomment ONE of the functions to use it. If multiple imports are uncommented, the lowest function is the one the compiler will use.
+
+```python
+# OBJECTIVE FUNCTION SELECTION -UNCOMMENT HERE TO SELECT
+#import one_dim_x_test.configs_F as func_configs     # single objective, 1D input
+#import himmelblau.configs_F as func_configs         # single objective, 2D input
+import lundquist_3_var.configs_F as func_configs     # multi objective function
+```
+
+The surrogate models are included at the top of the file. DO NOT comment these imports out. Instead, comment/uncomment them in the \_init\_ function. This is done so that the default configurations can be set in \_init\_. The surrogate models do not share the same initialization variables due to their broad nature of functionality. 
+
+DO NOT comment these:
+```python
+# SURROGATE MODEL OPTIONS - UNCOMMENT IN _init_ to select
+from surrogate_models.RBF_network import RBFNetwork
+from surrogate_models.gaussian_process import GaussianProcess
+from surrogate_models.kriging_regression import Kriging
+from surrogate_models.polynomial_regression import PolynomialRegression
+from surrogate_models.polynomial_chaos_expansion import PolynomialChaosExpansion
+from surrogate_models.KNN_regression import KNNRegression
+from surrogate_models.decision_tree_regression import DecisionTreeRegression
+
+```
+
+Select an optimizer by commenting out the unused surrorgate models in \_init\_:
+
+```python
+        # uncomment to select ONE:
+        #self.sm = RBFNetwork(kernel=RBF_kernel, epsilon=RBF_epsilon)       
+        #self.sm = Kriging(length_scale=K_length_scale, noise=K_noise)
+        #self.sm = GaussianProcess(length_scale=GP_length_scale,noise=GP_noise)  # select the surrogate model
+        self.sm = PolynomialRegression(degree=PR_degree)
+        #self.sm = PolynomialChaosExpansion(degree=PC_degree)
+        #self.sm = KNNRegression(n_neighbors=KNN_n_neighbors, weights=KNN_weights)
+        #self.sm = DecisionTreeRegression(max_depth=DTR_max_depth)
+```
+
+
+## References
+
+[1] J. Kennedy and R. Eberhart, "Particle swarm optimization," Proceedings of ICNN'95 - International Conference on Neural Networks, Perth, WA, Australia, 1995, pp. 1942-1948 vol.4, doi: 10.1109/ICNN.1995.488968.
+
+[2] A. L. Custódio and J. F. A. Madeira, “MultiGLODS: global and local multiobjective optimization using direct search,” Journal of Global Optimization, vol. 72, no. 2, pp. 323–345, Feb. 2018, doi: https://doi.org/10.1007/s10898-018-0618-1.
+
+[3] A. L. Custódio and J. F. A. Madeira, “GLODS: Global and Local Optimization using Direct Search,” Journal of Global Optimization, vol. 62, no. 1, pp. 1–28, Aug. 2014, doi: https://doi.org/10.1007/s10898-014-0224-9.
+
+[4] Wikipedia Contributors, “Himmelblau’s function,” Wikipedia, Dec. 29, 2023. https://en.wikipedia.org/wiki/Himmelblau%27s_function
+
+[5] Wikipedia Contributors, “Bayesian optimization,” Wikipedia, Jul. 05, 2019. https://en.wikipedia.org/wiki/Bayesian_optimization
+
+[6] W. Wang, “Bayesian Optimization Concept Explained in Layman Terms,” Medium, Mar. 22, 2022. https://towardsdatascience.com/bayesian-optimization-concept-explained-in-layman-terms-1d2bcdeaf12f
+
+[7] C. Brecque, “The intuitions behind Bayesian Optimization with Gaussian Processes,” Medium, Apr. 02, 2021. https://towardsdatascience.com/the-intuitions-behind-bayesian-optimization-with-gaussian-processes-7e00fcc898a0
+
+[8] “Introduction to Bayesian Optimization (BO) — limbo 0.1 documentation,” resibots.eu. https://resibots.eu/limbo/guides/bo.html
+
+[9] “Radial Basis Function Networks (RBFNs) with Python 3: A Comprehensive Guide – Innovate Yourself,” Nov. 03, 2023. https://innovationyourself.com/radial-basis-function-networks-rbfn/
+
+[10] Everton Gomede, PhD, “Radial Basis Functions Neural Networks: Unlocking the Power of Nonlinearity,” Medium, Jun. 06, 2023. https://medium.com/@evertongomede/radial-basis-functions-neural-networks-unlocking-the-power-of-nonlinearity-c67f6240a5bb
+
+[11] J. Luo, W. Xu and J. Chen, "A Novel Radial Basis Function (RBF) Network for Bayesian Optimization," 2021 IEEE 7th International Conference on Cloud Computing and Intelligent Systems (CCIS), Xi'an, China, 2021, pp. 250-254, doi: 10.1109/CCIS53392.2021.9754629.
+
+[12] Wikipedia Contributors, “Kriging,” Wikipedia, Oct. 16, 2018. https://en.wikipedia.org/wiki/Kriging
+
+[13] “Polynomial kernel,” Wikipedia, Oct. 02, 2019. https://en.wikipedia.org/wiki/Polynomial_kernel
+
+[14] A. Radhakrishnan, M. Luyten, G. Stefanakis, and C. Cai, “Lecture 3: Kernel Regression,” 2022. Available: https://web.mit.edu/modernml/course/lectures/MLClassLecture3.pdf
+
+[15] “Polynomial chaos,” Wikipedia, Mar. 19, 2024. https://en.wikipedia.org/wiki/Polynomial_chaos
+
+[16] “Polynomial Chaos Expansion — Uncertainty Quantification,” dictionary.helmholtz-uq.de. https://dictionary.helmholtz-uq.de/content/PCE.html (accessed Jun. 28, 2024).
+
+[17] T. Srivastava, “Introduction to KNN, K-Nearest Neighbors : Simplified,” Analytics Vidhya, Mar. 07, 2019. https://www.analyticsvidhya.com/blog/2018/03/introduction-k-neighbours-algorithm-clustering/
+
+[18] Wikipedia Contributors, “k-nearest neighbors algorithm,” Wikipedia, Mar. 19, 2019. https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm
+
+[19] “Python | Decision Tree Regression using sklearn,” GeeksforGeeks, Oct. 04, 2018. https://www.geeksforgeeks.org/python-decision-tree-regression-using-sklearn/
+
+[20] “Decision Tree Regression,” Saedsayad.com, 2019. https://www.saedsayad.com/decision_tree_reg.htm
+
+[21] Wikipedia Contributors, “Decision tree learning,” Wikipedia, Jun. 12, 2019. https://en.wikipedia.org/wiki/Decision_tree_learning
+
+## Publications and Integration
+This software works as a stand-alone implementation, and as a selection of optimizers integrated into AntennaCAT. Publications featuring the code as part of AntennaCAT will be added as they become public.
+
+
+
