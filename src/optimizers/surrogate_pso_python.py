@@ -24,7 +24,7 @@ class swarm:
     # swarm([[float, float, ...]], [[float, float, ...]], [[float, ...]], float, int,
     # func, func,
     # dataFrame,
-    # class obj, bool,
+    # class obj,
     # bool, class obj) 
     #  
     # opt_df contains class-specific tuning parameters
@@ -38,14 +38,11 @@ class swarm:
     def __init__(self,  lbound, ubound, targets,E_TOL, maxit,
                  obj_func, constr_func, 
                  opt_df,
-                 parent=None, detailedWarnings=False, 
+                 parent=None, 
                  useSurrogateModel=False, surrogateOptimizer=None): 
 
         # Optional parent class func call to write out values that trigger constraint issues
         self.parent = parent 
-        # Additional output for advanced debugging to TERMINAL. 
-        # Some of these messages will be returned via debug
-        self.detailedWarnings = detailedWarnings 
         # vars for using surrogate model
         self.useSurrogateModel = useSurrogateModel # bool for if using surrogate model
         self.surrogateOptimizer = surrogateOptimizer     # pass in the class for the surrogate model
