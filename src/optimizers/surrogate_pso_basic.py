@@ -463,43 +463,17 @@ class swarm:
         capValue = varValue 
 
         if type(varValue) == np.ndarray:
-            for idx in range(0, len(varValue)): 
-                if varValue[idx] == 0:
-                    pass
-                elif abs(varValue[idx]) > 1e100:
-                    varValue[idx] = 1e100*np.sign(varValue[idx])
-                    if self.detailedWarnings == True:
-                        msg = ("WARNING: " + str(varName) + " item " + str(idx) + "  is " + str(varValue[idx]) + ". using max exp cap")
-                        self.debug_message_printout(msg)
-                        msg = ("WARNING: your ants are at risk of leaving the farm")  
-                        self.debug_message_printout(msg)
-
-                elif abs(varValue[idx]) < 1e-100:
-                    varValue[idx]=1e-100*np.sign(varValue[idx])
-                    if self.detailedWarnings == True:
-                        msg = ("WARNING: " + str(varName) + " item " + str(idx) + "  is " + str(varValue[idx]) + ". using min exp cap")
-                        self.debug_message_printout(msg)
-                        msg = ("WARNING: your ants are at risk of leaving the farm")  
-                        self.debug_message_printout(msg)
+            capValue = np.clip(varValue, 1e-50, 1e50)
         else:
             if varValue == 0:
                 pass
-            elif abs(varValue) > 1e100:
-                capValue = 1e100*np.sign(varValue)
-                if self.detailedWarnings == True:
-                    msg = ("WARNING: " + str(varName) + " is " + str(varValue) + ". using max exp cap")
-                    self.debug_message_printout(msg)
-                    msg = ("WARNING: your ants are at risk of leaving the farm")  
-                    self.debug_message_printout(msg)
-            elif abs(varValue) < 1e-100:
-                capValue = 1e-100*np.sign(varValue)
-                if self.detailedWarnings == True:
-                    msg = ("WARNING: " + str(varName) + " is " + str(varValue) + ". using min exp cap")
-                    self.debug_message_printout(msg)
-                    msg = ("WARNING: your ants are at risk of leaving the farm")  
-                    self.debug_message_printout(msg)  
+            elif abs(varValue) > 1e50:
+                capValue = 1e50*np.sign(varValue)
+            elif abs(varValue) < 1e-50:
+                capValue = 1e-50*np.sign(varValue)
 
         return capValue
+    
 
     def debug_message_printout(self, msg):
         if self.parent == None:
