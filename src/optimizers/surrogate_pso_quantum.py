@@ -434,4 +434,3 @@ class swarm:
         else:
             self.parent.debug_message_printout(msg)
 
-
