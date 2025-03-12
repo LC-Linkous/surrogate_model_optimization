@@ -103,7 +103,6 @@ class MainTest():
         # OPTIMIZER INIT
         self.best_eval = 10      #usually set to 1 because anything higher is too many magnitutes to high to be useful
         parent = self            # NOTE: using 'None' for parents does not work with surrogate model
-        detailedWarnings = False # bool for detailed prints outs
         self.suppress_output = True   # Suppress the console output of particle swarm
         self.allow_update = True      # Allow objective call to update state 
         
@@ -342,7 +341,7 @@ class MainTest():
             self.b_opt = pso_p_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, detailedWarnings=detailedWarnings, 
+                                    parent=parent, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)  
             
@@ -360,7 +359,7 @@ class MainTest():
             self.b_opt = pso_b_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, detailedWarnings=detailedWarnings, 
+                                    parent=parent, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)  
                             
@@ -378,7 +377,7 @@ class MainTest():
             self.b_opt = pso_q_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, detailedWarnings=detailedWarnings, 
+                                    parent=parent,  
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)    
 
@@ -400,7 +399,7 @@ class MainTest():
             self.b_opt = catswarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, detailedWarnings=detailedWarnings, 
+                                    parent=parent, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)     
 
@@ -416,7 +415,7 @@ class MainTest():
             self.b_opt = sand_cat_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, detailedWarnings=detailedWarnings, 
+                                    parent=parent, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)   
             
@@ -439,7 +438,7 @@ class MainTest():
             self.b_opt = cat_q_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, detailedWarnings=detailedWarnings, 
+                                    parent=parent, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)     
 
@@ -458,7 +457,7 @@ class MainTest():
             self.b_opt = chicken_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, detailedWarnings=detailedWarnings, 
+                                    parent=parent, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)    
         
@@ -480,7 +479,7 @@ class MainTest():
             self.b_opt = chicken_i15_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, detailedWarnings=detailedWarnings, 
+                                    parent=parent, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)    
         
@@ -502,7 +501,7 @@ class MainTest():
             self.b_opt = chicken_q_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, detailedWarnings=detailedWarnings, 
+                                    parent=parent, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)    
         
@@ -518,7 +517,7 @@ class MainTest():
             self.b_opt = multi_glods(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, detailedWarnings=detailedWarnings, 
+                                    parent=parent, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)   
         else:
@@ -572,7 +571,7 @@ class MainTest():
         setup_sm_opt = surrogateOptimizer(self.LB, self.UB, self.TARGETS, self.sm_tol, self.sm_maxit,  
                                                          obj_func=func_f, constr_func=self.constr_F, 
                                                          opt_df=self.sm_opt_df,
-                                                         parent=self, detailedWarnings=False)
+                                                         parent=self)
 
         return setup_sm_opt
 
