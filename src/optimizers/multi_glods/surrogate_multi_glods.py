@@ -33,7 +33,7 @@ class multi_glods:
     # multi_glods([[float, float, ...]], [[float, float, ...]], [[float, ...]], float, int,
     # func, func,
     # dataFrame,
-    # class obj, bool,
+    # class obj,
     # bool, class obj) 
     #  
     # opt_df contains class-specific tuning parameters
@@ -45,7 +45,7 @@ class multi_glods:
     def __init__(self,  LB, UB, TARGETS, TOL, MAXIT,
                     obj_func, constr_func, 
                     opt_df,
-                    parent=None, detailedWarnings=False, 
+                    parent=None,
                     useSurrogateModel=False, surrogateOptimizer=None): 
 
         # defaults - DO NOT USE SURROGATE INSIDE MULTIGLODS
@@ -71,7 +71,6 @@ class multi_glods:
 
 
         self.prob['parent'] = parent
-        self.detailedWarnings = detailedWarnings
         self.done = 0
 
     def step(self, suppress_output):
