@@ -461,52 +461,27 @@ class swarm:
 
     def floating_point_error_handler(self, varName, varValue):
         # function added to handle floating point errors caused by user input variations
-        # buffer overflows happen when t_mod, vlim, and the weights are all high
-        # buffer underflows happen when t_mod, vlim, and the weights are all low
+        # longer than it has to be for explicit print out messages + modification
+
+        # buffer overflows happen when vlim, and the weights are all high
+        # buffer underflows happen when vlim, and the weights are all low
         # other combinations may cause either issue, but these have been found experimentally
 
-        # constr_buffer.py or constr_F.py may be more strict depending on the function
+        # constr_buffer.py or constr_F.py may be stricter depending on the function
         # this is the limit for the optimizer, not the objective function.
 
         # this function applies a max or min cap to the passed variable
         capValue = varValue 
 
         if type(varValue) == np.ndarray:
-            for idx in range(0, len(varValue)): 
-                if varValue[idx] == 0:
-                    pass
-                elif abs(varValue[idx]) > 1e100:
-                    varValue[idx] = 1e100*np.sign(varValue[idx])
-                    if self.detailedWarnings == True:
-                        msg = ("WARNING: " + str(varName) + " item " + str(idx) + "  is " + str(varValue[idx]) + ". using max exp cap")
-                        self.debug_message_printout(msg)
-                        msg = ("WARNING: your ants are at risk of leaving the farm")  
-                        self.debug_message_printout(msg)
-
-                elif abs(varValue[idx]) < 1e-100:
-                    varValue[idx]=1e-100*np.sign(varValue[idx])
-                    if self.detailedWarnings == True:
-                        msg = ("WARNING: " + str(varName) + " item " + str(idx) + "  is " + str(varValue[idx]) + ". using min exp cap")
-                        self.debug_message_printout(msg)
-                        msg = ("WARNING: your ants are at risk of leaving the farm")  
-                        self.debug_message_printout(msg)
+            capValue = np.clip(varValue, 1e-50, 1e50)
         else:
             if varValue == 0:
                 pass
-            elif abs(varValue) > 1e100:
-                capValue = 1e100*np.sign(varValue)
-                if self.detailedWarnings == True:
-                    msg = ("WARNING: " + str(varName) + " is " + str(varValue) + ". using max exp cap")
-                    self.debug_message_printout(msg)
-                    msg = ("WARNING: your ants are at risk of leaving the farm")  
-                    self.debug_message_printout(msg)
-            elif abs(varValue) < 1e-100:
-                capValue = 1e-100*np.sign(varValue)
-                if self.detailedWarnings == True:
-                    msg = ("WARNING: " + str(varName) + " is " + str(varValue) + ". using min exp cap")
-                    self.debug_message_printout(msg)
-                    msg = ("WARNING: your ants are at risk of leaving the farm")  
-                    self.debug_message_printout(msg)  
+            elif abs(varValue) > 1e50:
+                capValue = 1e50*np.sign(varValue)
+            elif abs(varValue) < 1e-50:
+                capValue = 1e-50*np.sign(varValue)
 
         return capValue
 
