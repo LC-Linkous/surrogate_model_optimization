@@ -11,7 +11,7 @@
 #       
 #
 #   Author(s): Jonathan Lundquist, Lauren Linkous
-#   Last update: February 18, 2024
+#   Last update: March 12, 2025
 ##--------------------------------------------------------------------\
 
 import numpy as np
@@ -35,7 +35,7 @@ class swarm:
     # T_MOD: float
     #               
 
-    def __init__(self,  lbound, ubound, targets,E_TOL, maxit,
+    def __init__(self,  lbound, ubound, targets, E_TOL, maxit,
                  obj_func, constr_func, 
                  opt_df,
                  parent=None, 

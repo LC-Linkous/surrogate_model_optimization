@@ -11,7 +11,7 @@
 #       literature.     
 #
 #   Author(s): Lauren Linkous
-#   Last update: February 18, 2024
+#   Last update: March 12, 2025
 ##--------------------------------------------------------------------\
 #! /usr/bin/python3
 
@@ -19,7 +19,6 @@
 import numpy as np
 from numpy.random import Generator, MT19937
 import sys
-import time
 np.seterr(all='raise')
 
 
