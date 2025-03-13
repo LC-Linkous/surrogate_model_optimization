@@ -32,7 +32,7 @@ The surrogate model approximators were originally featured in [bayesian_optimiza
 
 ## Requirements
 
-This project requires numpy and matplotlib. The original multi_glods_python does not require matplotlib or its dependencies.
+This project requires numpy and pandas. 
 
 Use 'pip install -r requirements.txt' to install the following dependencies:
 
@@ -48,7 +48,7 @@ tzdata==2025.1
 For manual installation:
 
 ```python
-pip install pandas 
+pip install numpy, pandas 
 
 ```
 
@@ -158,6 +158,7 @@ To select optimizers and approximators:
         APPROXIMATOR_CHOICE
         0: RBF      1: Gaussian Process         2: Kriging       3:Polynomial Regression
         4: Polynomial Chaos Expansion  5: KNN regression   6: Decision Tree Regression
+        7: Matern      8: Lagrangian Linear Regression  9:Lagrangian Polynomial Regression
         '''
 
         BASE_OPT_CHOICE = 1
@@ -192,6 +193,9 @@ from surrogate_models.polynomial_regression import PolynomialRegression
 from surrogate_models.polynomial_chaos_expansion import PolynomialChaosExpansion
 from surrogate_models.KNN_regression import KNNRegression
 from surrogate_models.decision_tree_regression import DecisionTreeRegression
+from surrogate_model.matern_process import MaternProcess
+from surrogate_model.lagrangian_linear_regression import LagrangianLinearRegression
+from surrogate_model.lagrangian_polynomial_regression import LagrangianPolynomialRegression
 
 ```
 
