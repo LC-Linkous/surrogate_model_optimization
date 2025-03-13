@@ -9,7 +9,7 @@
 #       
 #
 #   Author(s): Lauren Linkous
-#   Last update: March 12, 2025
+#   Last update: March 13, 2025
 ##--------------------------------------------------------------------\
 
 
@@ -20,7 +20,7 @@ np.seterr(all='raise')
 
 
 class swarm:
-    # arguments should take form: 
+    # arguments should take the form: 
     # swarm([[float, float, ...]], [[float, float, ...]], [[float, ...]], float, int,
     # func, func,
     # dataFrame,

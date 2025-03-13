@@ -10,7 +10,7 @@
 #
 #
 #   Author(s): Jonathan Lundquist, Lauren Linkous 
-#   Last update: February 18, 2024
+#   Last update: March 13, 2025
 ##--------------------------------------------------------------------\
 
 
@@ -29,7 +29,7 @@ except:# for local, unit testing
     from optimizers.multi_glods.multiglods import multiglods
 
 class multi_glods:
-    # arguments should take form: 
+    # arguments should take the form: 
     # multi_glods([[float, float, ...]], [[float, float, ...]], [[float, ...]], float, int,
     # func, func,
     # dataFrame,

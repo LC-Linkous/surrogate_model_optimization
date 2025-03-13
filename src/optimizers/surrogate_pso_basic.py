@@ -10,7 +10,7 @@
 #       
 #
 #   Author(s):  Lauren Linkous, Jonathan Lundquist
-#   Last update: March 12, 2025
+#   Last update: March 13, 2025
 ##--------------------------------------------------------------------\
 
 import numpy as np
@@ -19,7 +19,7 @@ import sys
 np.seterr(all='raise')
 
 class swarm:
-    # arguments should take form: 
+    # arguments should take the form: 
     # swarm([[float, float, ...]], [[float, float, ...]], [[float, ...]], float, int,
     # func, func,
     # dataFrame,
