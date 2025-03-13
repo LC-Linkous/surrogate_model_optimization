@@ -41,6 +41,9 @@ from surrogate_model.polynomial_regression import PolynomialRegression
 from surrogate_model.polynomial_chaos_expansion import PolynomialChaosExpansion
 from surrogate_model.KNN_regression import KNNRegression
 from surrogate_model.decision_tree_regression import DecisionTreeRegression
+from surrogate_model.matern_process import MaternProcess
+from surrogate_model.lagrangian_linear_regression import LagrangianLinearRegression
+from surrogate_model.lagrangian_polynomial_regression import LagrangianPolynomialRegression
 
 # OBJECTIVE FUNCTION SELECTION
 #import one_dim_x_test.configs_F as func_configs     # single objective, 1D input
@@ -94,6 +97,7 @@ class MainTest():
         APPROXIMATOR_CHOICE
         0: RBF      1: Gaussian Process         2: Kriging       3:Polynomial Regression
         4: Polynomial Chaos Expansion  5: KNN regression   6: Decision Tree Regression
+        7: Matern      8: Lagrangian Linear Regression  9:Lagrangian Polynomial Regression
         '''
 
         BASE_OPT_CHOICE = 1
@@ -323,6 +327,39 @@ class MainTest():
             num_init_points = 1
             self.sm_approx = DecisionTreeRegression(max_depth=DTR_max_depth)
             noError, errMsg = self.sm_approx._check_configuration(num_init_points)
+
+        elif APPROXIMATOR_CHOICE == 7:
+            # Matern Process vars
+            DTR_max_depth = 1  # options: ints
+            num_init_points = 1
+            MP_length_scale = 1.1
+            MP_noise = 1e-10
+            MP_nu = 3/2
+            self.sm = MaternProcess(length_scale=MP_length_scale, noise=MP_noise, nu=MP_nu)
+            noError, errMsg = self.sm._check_configuration(num_init_points)
+
+        elif APPROXIMATOR_CHOICE == 8:
+            # Lagrangian penalty linear regression vars
+            num_init_points = 2
+            LLReg_noise = 1e-10
+            LLReg_constraint_degree=1
+            self.sm = LagrangianLinearRegression(noise=LLReg_noise, constraint_degree=LLReg_constraint_degree)
+            noError, errMsg = self.sm._check_configuration(num_init_points)
+
+        elif APPROXIMATOR_CHOICE == 9:
+            # Lagrangian penalty polynomial regression vars
+            num_init_points = 2
+            LPReg_degree = 5
+            LPReg_noise = 1e-10
+            LPReg_constraint_degree = 3
+            self.sm = LagrangianPolynomialRegression(degree=LPReg_degree, noise=LPReg_noise, constraint_degree=LPReg_constraint_degree)
+            noError, errMsg = self.sm._check_configuration(num_init_points)
+
+
+        if noError == False:
+            print("ERROR in development_test.py. Incorrect approximator model configuration")
+            print(errMsg)
+            return
 
 
 
