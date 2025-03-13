@@ -53,17 +53,22 @@ class multi_glods:
         useSurrogateModel=False
         secondOptimizer=None
 
+        #unpack the opt_df standardized vals
+        BP = float(opt_df['BP'][0])
+        GP = float(opt_df['GP'][0])
+        SF = float(opt_df['SF'][0])
+   
         #reformat since multi_glods needs single []
         LB = LB[0]
         UB = UB[0]
+
+        # enforce typing
+        NO_OF_VARS = int(len(LB))
+        TOL = float(TOL)
+        MAXIT = int(MAXIT)
         TARGETS = TARGETS
 
-        #unpack the opt_df standardized vals
-        NO_OF_VARS = len(LB)
-        BP = opt_df['BP'][0]
-        GP = opt_df['GP'][0]
-        SF = opt_df['SF'][0]
-   
+
         self.init, self.run_ctl, self.alg, \
             self.prob, self.ctl, self.state = \
                 one_time_init(NO_OF_VARS, LB, UB, TARGETS, TOL, MAXIT,

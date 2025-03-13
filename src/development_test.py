@@ -100,7 +100,7 @@ class MainTest():
         7: Matern      8: Lagrangian Linear Regression  9:Lagrangian Polynomial Regression
         '''
 
-        BASE_OPT_CHOICE = 1
+        BASE_OPT_CHOICE = 9
         SURROGATE_OPT_CHOICE = 9
         APPROXIMATOR_CHOICE = 4
         
