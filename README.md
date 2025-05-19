@@ -1,16 +1,22 @@
 # surrogate_model_optimization
 
-This repo features the core AntennaCAT optimizers with surrogate model capabilities. It is specifically for unit testing and development. 
+## IN PROGRESS - UNSTABLE, LIMITED DOCUMENTATION
+
+
+This repository features the core AntennaCAT optimizers with surrogate model capabilities. It is specifically for unit testing and development. 
+
+
+
 
 The original versions of the optimizers can be found at:
 | Base Optimizer | Alternate Version | Quantum-Inspired Optimizer | Surrogate Model Version |
 | ------------- | ------------- | ------------- |------------- |
-| [pso_python](https://github.com/LC-Linkous/pso_python) | [pso_basic](https://github.com/LC-Linkous/pso_python/tree/pso_basic) | [pso_quantum](https://github.com/LC-Linkous/pso_python/tree/pso_quantum)  | all versions are options in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization)|
+| [pso_python](https://github.com/LC-Linkous/pso_python) | [pso_basic](https://github.com/LC-Linkous/pso_python/tree/pso_basic) | [pso_quantum](https://github.com/LC-Linkous/pso_quantum)  | all versions are options in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization)|
 | [cat_swarm_python](https://github.com/LC-Linkous/cat_swarm_python) | [sand_cat_python](https://github.com/LC-Linkous/cat_swarm_python/tree/sand_cat_python)| [cat_swarm_quantum](https://github.com/LC-Linkous/cat_swarm_python/tree/cat_swarm_quantum) |all versions are options in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization) |
 | [chicken_swarm_python](https://github.com/LC-Linkous/chicken_swarm_python) | [2015_improved_chicken_swarm](https://github.com/LC-Linkous/chicken_swarm_python/tree/improved_chicken_swarm) <br>2022 improved chicken swarm| [chicken_swarm_quantum](https://github.com/LC-Linkous/chicken_swarm_python/tree/chicken_swarm_quantum)  | all versions are options in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization)|
 | [sweep_python](https://github.com/LC-Linkous/sweep_python)  | *alternates in base repo | -  | - |
-| [bayesian optimization_python](https://github.com/LC-Linkous/bayesian_optimization_python)  | -| - | *interchangeable surrogate models <br> included in base repo |- | - | multiGLODS option in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization)|
-
+| [bayesian optimization_python](https://github.com/LC-Linkous/bayesian_optimization_python)  | -| - | *interchangeable surrogate models <br> included in base repo |
+| [multi_glods_python](https://github.com/LC-Linkous/multi_glods_python)| GLODS <br> DIRECT | - | multiGLODS option in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization)|
 
 
 The PSO optimizer is modified from the [pso_python](https://github.com/jonathan46000/pso_python) by [jonathan46000](https://github.com/jonathan46000), an adaptive timestep PSO optimizer, for data collection baseline. This repo removes the adaptive time modulation step of pso_python.
@@ -37,12 +43,23 @@ This project requires numpy and pandas.
 Use 'pip install -r requirements.txt' to install the following dependencies:
 
 ```python
-numpy==2.2.3
+contourpy==1.2.1
+cycler==0.12.1
+fonttools==4.51.0
+importlib_resources==6.4.0
+kiwisolver==1.4.5
+matplotlib==3.8.4
+numpy==1.26.4
+packaging==24.0
 pandas==2.2.3
+pillow==10.3.0
+pyparsing==3.1.2
 python-dateutil==2.9.0.post0
 pytz==2025.1
-six==1.17.0
+six==1.16.0
 tzdata==2025.1
+zipp==3.18.1
+
 ```
 
 For manual installation:
@@ -56,10 +73,108 @@ pip install numpy, pandas
 
 ## Implementation
 
-### Constraint Handling
-Users must create their own constraint function for their ptimization problems, if there are constraints beyond the problem bounds.  This is then passed into the constructor. If the default constraint function is used, it always returns true (which means there are no constraints).
+### Initialization 
 
-### Internal Objective Function Examples
+Initialization is currently being streamlined. It is dependent based on the layering of the surrogate models and base optimizer. This will be documented later.
+
+
+
+### Constraint Handling
+Users must create their own constraint function for their problems, if there are constraints beyond the problem bounds.  This is then passed into the constructor. If the default constraint function is used, it always returns true (which means there are no constraints).
+
+### Boundary Types
+
+Most optimizers have 4 different types of bounds, Random (Particles that leave the area respawn), Reflection (Particles that hit the bounds reflect), Absorb (Particles that hit the bounds lose velocity in that direction), Invisible (Out of bound particles are no longer evaluated).
+
+Some updates have not incorporated appropriate handling for all boundary conditions. This bug is known and is being worked on. The most consistent boundary type at the moment is Random. If constraints are violated, but bounds are not, currently random bound rules are used to deal with this problem. 
+
+
+
+### Multi-Objective Optimization
+The no preference method of multi-objective optimization, but a Pareto Front is not calculated. Instead, the best choice (smallest norm of output vectors) is listed as the output.
+
+### Objective Function Handling
+
+The objective function is handled in two parts. 
+
+
+* First, a defined function, such as one passed in from `func_F.py` (see examples), is evaluated based on current particle locations. This allows for the optimizers to be utilized in the context of 1. benchmark functions from the objective function library, 2. user defined functions, 3. replacing explicitly defined functions with outside calls to programs such as simulations or other scripts that return a matrix of evaluated outputs. 
+
+* Secondly, the actual objective function is evaluated. In the AntennaCAT set of optimizers, the objective function evaluation is either a `TARGET` or `THRESHOLD` evaluation. For a `TARGET` evaluation, which is the default behavior, the optimizer minimizes the absolute value of the difference of the target outputs and the evaluated outputs. A `THRESHOLD` evaluation includes boolean logic to determine if a 'greater than or equal to' or 'less than or equal to' or 'equal to' relation between the target outputs (or thresholds) and the evaluated outputs exist. 
+
+Future versions may include options for function minimization when target values are absent. 
+
+
+
+#### Creating a Custom Objective Function
+
+Custom objective functions can be used by creating a directory with the following files:
+* configs_F.py
+* constr_F.py
+* func_F.py
+
+`configs_F.py` contains lower bounds, upper bounds, the number of input variables, the number of output variables, the target values, and a global minimum if known. This file is used primarily for unit testing and evaluation of accuracy. If these values are not known, or are dynamic, then they can be included experimentally in the controller that runs the optimizer's state machine. 
+
+`constr_F.py` contains a function called `constr_F` that takes in an array, `X`, of particle positions to determine if the particle or agent is in a valid or invalid location. 
+
+`func_F.py` contains the objective function, `func_F`, which takes two inputs. The first input, `X`, is the array of particle or agent positions. The second input, `NO_OF_OUTS`, is the integer number of output variables, which is used to set the array size. In included objective functions, the default value is hardcoded to work with the specific objective function.
+
+Below are examples of the format for these files.
+
+`configs_F.py`:
+```python
+OBJECTIVE_FUNC = func_F
+CONSTR_FUNC = constr_F
+OBJECTIVE_FUNC_NAME = "one_dim_x_test.func_F" #format: FUNCTION NAME.FUNCTION
+CONSTR_FUNC_NAME = "one_dim_x_test.constr_F" #format: FUNCTION NAME.FUNCTION
+
+# problem dependent variables
+LB = [[0]]             # Lower boundaries
+UB = [[1]]             # Upper boundaries
+IN_VARS = 1            # Number of input variables (x-values)
+OUT_VARS = 1           # Number of output variables (y-values) 
+TARGETS = [0]          # Target values for output
+GLOBAL_MIN = []        # Global minima sample, if they exist. 
+
+```
+
+`constr_F.py`, with no constraints:
+```python
+def constr_F(x):
+    F = True
+    return F
+```
+
+`constr_F.py`, with constraints:
+```python
+def constr_F(X):
+    F = True
+    # objective function/problem constraints
+    if (X[2] > X[0]/2) or (X[2] < 0.1):
+        F = False
+    return F
+```
+
+`func_F.py`:
+```python
+import numpy as np
+import time
+
+def func_F(X, NO_OF_OUTS=1):
+    F = np.zeros((NO_OF_OUTS))
+    noErrors = True
+    try:
+        x = X[0]
+        F = np.sin(5 * x**3) + np.cos(5 * x) * (1 - np.tanh(x ** 2))
+    except Exception as e:
+        print(e)
+        noErrors = False
+
+    return [F], noErrors
+```
+
+
+#### Internal Objective Function Example
 
 There are three functions included in the repository:
 1) Himmelblau's function, which takes 2 inputs and has 1 output
@@ -75,9 +190,9 @@ Each function has four files in a directory:
 Other multi-objective functions can be applied to this project by following the same format (and several have been collected into a compatible library, and will be released in a separate repo)
 
 <p align="center">
-        <img src="https://github.com/LC-Linkous/pso_basic_multi_glods_surrogate/blob/main/media/himmelblau_plots.png" alt="Himmelblau function" height="250">
+        <img src="media/himmelblau_plots.png" alt="Himmelblau’s function" height="250">
 </p>
-   <p align="center">Plotted Himmelblau Function with 3D Plot on the Left, and a 2D Contour on the Right</p>
+   <p align="center">Plotted Himmelblau’s Function with 3D Plot on the Left, and a 2D Contour on the Right</p>
 
 ```math
 f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2
@@ -90,9 +205,8 @@ f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2
 | f(-3.779310, -3.283186) = 0 | $-5 \leq x,y \leq 5$  |   | 
 | f(3.584428, -1.848126) = 0  | $-5 \leq x,y \leq 5$   |   | 
 
-
 <p align="center">
-        <img src="https://github.com/LC-Linkous/pso_basic_multi_glods_surrogate/blob/main/media/lundquist_3var_plots.png" alt="Function Feasible Decision Space and Objective Space with Pareto Front" height="200">
+        <img src="media/obj_func_pareto.png" alt="Function Feasible Decision Space and Objective Space with Pareto Front" height="200">
 </p>
    <p align="center">Plotted Multi-Objective Function Feasible Decision Space and Objective Space with Pareto Front</p>
 
@@ -109,7 +223,7 @@ f_{2}(\mathbf{x}) = (x_3-0.2)^4
 | 3      | $0.21\leq x_1\leq 1$ <br> $0\leq x_2\leq 1$ <br> $0.1 \leq x_3\leq 0.5$  | $x_3\gt \frac{x_1}{2}$ or $x_3\lt 0.1$| 
 
 <p align="center">
-        <img src="https://github.com/LC-Linkous/pso_basic_multi_glods_surrogate/blob/main/media/1D_test_plots.png" alt="Function Feasible Decision Space and Objective Space with Pareto Front" height="200">
+        <img src="media/1D_test_plots.png" alt="Function Feasible Decision Space and Objective Space with Pareto Front" height="200">
 </p>
    <p align="center">Plotted Single Input, Single-objective Function Feasible Decision Space and Objective Space with Pareto Front</p>
 
@@ -123,6 +237,41 @@ f(\mathbf{x}) = sin(5 * x^3) + cos(5 * x) * (1 - tanh(x^2))
 Local minima at $(0.444453, -0.0630916)$
 
 Global minima at $(0.974857, -0.954872)$
+
+### Target vs. Threshold Configuration
+
+An April 2025 feature is the user ability to toggle TARGET and THRESHOLD evaluation for the optimized values. The key variables for this are:
+
+```python
+# Boolean. use target or threshold. True = THRESHOLD, False = EXACT TARGET
+evaluate_threshold = True  
+
+# array
+TARGETS = func_configs.TARGETS    # Target values for output from function configs
+# OR:
+TARGETS = [0,0,0] #manually set BASED ON PROBLEM DIMENSIONS
+
+# threshold is same dims as TARGETS
+# 0 = use target value as actual target. value should EQUAL target
+# 1 = use as threshold. value should be LESS THAN OR EQUAL to target
+# 2 = use as threshold. value should be GREATER THAN OR EQUAL to target
+#DEFAULT THRESHOLD
+THRESHOLD = np.zeros_like(TARGETS) 
+# OR
+THRESHOLD = [0,1,2] # can be any mix of TARGET and THRESHOLD  
+```
+
+To implement this, the original `self.Flist` objective function calculation has been replaced with the function `objective_function_evaluation`, which returns a numpy array.
+
+The original calculation:
+```python
+self.Flist = abs(self.targets - self.Fvals)
+```
+Where `self.Fvals` is a re-arranged and error checked returned value from the passed in function from `func_F.py` (see examples for the internal objective function or creating a custom objective function). 
+
+When using a THRESHOLD, the `Flist` value corresponding to the target is set to epsilon (the smallest system value) if the evaluated `func_F` value meets the threshold condition for that target item. If the threshold is not met, the absolute value of the difference of the target output and the evaluated output is used. With a THRESHOLD configuration, each value in the numpy array is evaluated individually, so some values can be 'greater than or equal to' the target while others are 'equal' or 'less than or equal to' the target. 
+
+
 
 ## Example Testing
 

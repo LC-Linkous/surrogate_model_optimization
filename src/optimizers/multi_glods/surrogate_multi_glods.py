@@ -10,7 +10,7 @@
 #
 #
 #   Author(s): Jonathan Lundquist, Lauren Linkous 
-#   Last update: March 13, 2025
+#   Last update: May 18, 2025
 ##--------------------------------------------------------------------\
 
 
@@ -34,6 +34,7 @@ class multi_glods:
     # func, func,
     # dataFrame,
     # class obj,
+    # bool, [int, int, ...]
     # bool, class obj) 
     #  
     # opt_df contains class-specific tuning parameters
@@ -42,16 +43,22 @@ class multi_glods:
     # SF: int
     #
 
-    def __init__(self,  LB, UB, TARGETS, TOL, MAXIT,
-                    obj_func, constr_func, 
-                    opt_df,
-                    parent=None,
-                    useSurrogateModel=False, surrogateOptimizer=None): 
 
-        # defaults - DO NOT USE SURROGATE INSIDE MULTIGLODS
-        # this compatibility does not exist yet. 
-        useSurrogateModel=False
-        secondOptimizer=None
+    def __init__(self, LB, UB, TARGETS, TOL, MAXIT,
+                 obj_func, constr_func, 
+                 opt_df,
+                 parent=None, 
+                 evaluate_threshold=False, obj_threshold=None, 
+                 useSurrogateModel=False, surrogateOptimizer=None): 
+        
+
+        # Optional parent class func call to write out values that trigger constraint issues
+        self.parent = parent 
+        # vars for using surrogate model
+        self.useSurrogateModel = useSurrogateModel # bool for if using surrogate model
+        self.surrogateOptimizer = surrogateOptimizer     # pass in the class for the surrogate model
+                                                   # optimizer. this is configured as needed 
+
 
         #unpack the opt_df standardized vals
         BP = float(opt_df['BP'][0])
@@ -69,11 +76,30 @@ class multi_glods:
         TARGETS = TARGETS
 
 
+        #evaluation method for targets
+        # True: Evaluate as true targets
+        # False: Evaluate as thesholds based on information in obj_threshold
+        if evaluate_threshold==False:
+            THRESHOLD = None # for error checking later via wrapper
+
+        else:
+            if not(len(obj_threshold) == len(TARGETS)):
+                print("WARNING: THRESHOLD option selected.  +\
+                Dimensions for THRESHOLD do not match TARGET array. Defaulting to TARGET search.")
+                evaluate_threshold = False
+                THRESHOLD = None
+            else:
+                evaluate_threshold = evaluate_threshold #bool
+                THRESHOLD = np.array(obj_threshold).reshape(-1, 1) #np.array
+
+
+
+
+
         self.init, self.run_ctl, self.alg, \
             self.prob, self.ctl, self.state = \
                 one_time_init(NO_OF_VARS, LB, UB, TARGETS, TOL, MAXIT,
-                              BP, GP, SF, obj_func, constr_func)
-
+                              BP, GP, SF, obj_func, constr_func, evaluate_threshold, THRESHOLD)
 
         self.prob['parent'] = parent
         self.done = 0
@@ -87,11 +113,12 @@ class multi_glods:
         
    
     def call_objective(self, allow_update):
-        self.state, self.prob = f_eval_objective_call(self.state, 
+        self.state, self.prob, noErrorBool = f_eval_objective_call(self.state, 
                                                       self.prob, 
                                                       self.ctl,
                                                       allow_update)
-        
+        return noErrorBool
+
     def export_glods(self):
         glods_export = {'init': self.init, 'run_ctl': self.run_ctl,
                         'alg': self.alg, 'prob': self.prob,

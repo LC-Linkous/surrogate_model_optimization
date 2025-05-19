@@ -8,7 +8,7 @@
 #       
 #
 #   Author(s): Lauren Linkous, Jonathan Lundquist
-#   Last update: March 13, 2025
+#   Last update: May 18, 2025
 ##--------------------------------------------------------------------\
 
 
@@ -24,6 +24,7 @@ class swarm:
     # func, func,
     # dataFrame,
     # class obj,
+    # bool, [int, int, ...]
     # bool, class obj) 
     #  
     # opt_df contains class-specific tuning parameters
@@ -33,10 +34,11 @@ class swarm:
     #
         
     def __init__(self,  lbound, ubound, targets,E_TOL, maxit,
-                    obj_func, constr_func, 
-                    opt_df,
-                    parent=None,
-                    useSurrogateModel=False, surrogateOptimizer=None): 
+                 obj_func, constr_func, 
+                 opt_df,
+                 parent=None, 
+                 evaluate_threshold=False, obj_threshold=None, 
+                 useSurrogateModel=False, surrogateOptimizer=None): 
 
         # Optional parent class func call to write out values that trigger constraint issues
         self.parent = parent 
@@ -45,12 +47,29 @@ class swarm:
         self.surrogateOptimizer = surrogateOptimizer     # pass in the class for the surrogate model
                                                    # optimizer. this is configured as needed 
 
+        #evaluation method for targets
+        # True: Evaluate as true targets
+        # False: Evaluate as thesholds based on information in obj_threshold
+        if evaluate_threshold==False:
+            self.evaluate_threshold = False
+            self.obj_threshold = None
+
+        else:
+            if not(len(obj_threshold) == len(targets)):
+                self.debug_message_printout("WARNING: THRESHOLD option selected.  +\
+                Dimensions for THRESHOLD do not match TARGET array. Defaulting to TARGET search.")
+                self.evaluate_threshold = False
+                self.obj_threshold = None
+            else:
+                self.evaluate_threshold = evaluate_threshold #bool
+                self.obj_threshold = np.array(obj_threshold).reshape(-1, 1) #np.array
+        
+
+
         #unpack the opt_df standardized vals
         NO_OF_PARTICLES = opt_df['NO_OF_PARTICLES'][0]
         weights = opt_df['WEIGHTS'][0]
         boundary = opt_df['BOUNDARY'][0]
-
-
 
 
         heightl = np.shape(lbound)[0]
@@ -222,13 +241,81 @@ class swarm:
             if noError == True:
                 self.Fvals = np.array(newFVals).reshape(-1, 1)
                 if allow_update:
-                    self.Flist = abs(self.targets - self.Fvals)
+                    # EVALUATE OBJECTIVE FUNCTION - TARGET OR THRESHOLD
+                    self.Flist = self.objective_function_evaluation(self.Fvals, self.targets)# abs(self.targets - self.Fvals)
                     self.iter = self.iter + 1
                     self.allow_update = 1
                 else:
                     self.allow_update = 0
             return noError# return is for error reporting purposes only
-  
+
+
+    def objective_function_evaluation(self, Fvals, targets):
+        #pass in the Fvals & targets so that it's easier to track bugs
+
+        # this uses the fitness values and target (or threshold) to determine the Flist values
+        # Option #1: TARGET
+        # get DISTANCE FROM TARGET
+        # Option #2: THRESHOLD
+        # use THRESHOLD TO DETERMINE INTEREST
+        # if threshold is met, the distance is set to a small value (epsilon).
+        #  Setting the 'distance' to epsilon, the convergence value check can
+        # also remain the same format. 
+
+
+        # testing different values of epsilon
+        epsilon = np.finfo(float).eps #smallest system constant
+        # Ex: 2.220446049250313e-16  
+        # #may be greater than tolerance if tolerance is set very low for testing
+        #epsilon = 10**-18
+        #epsilon = 0  # causes issues with imag. numbers
+
+        Flist = np.zeros(len(Fvals))
+
+
+        if self.evaluate_threshold == True: #THRESHOLD
+            ctr = 0
+            for i in targets:
+                o_thres = int(self.obj_threshold[ctr]) #force type as err check
+                t = targets[ctr]
+                fv = Fvals[ctr]
+
+                if o_thres == 0: #TARGET. default
+                    # sets Flist[ctr] as abs distance of  Fvals[ctr] from target
+                    Flist[ctr] = abs(t - fv)
+
+                elif o_thres == 1: #LESS THAN OR EQUAL 
+                    # checks if the Fvals[ctr] is LESS THAN OR EQUAL to target
+                    # if yes, then distance is 0 (considered 'on target)
+                    # if no, then Flist is abs distance of  Fvals[ctr] from target
+                    if fv <= t:
+                        Flist[ctr] = epsilon
+                    else:
+                        Flist[ctr] = abs(t - fv)
+
+                elif o_thres == 2: #GREATER THAN OR EQUAL
+                    # checks if the Fvals[ctr] is GREATER THAN OR EQUAL to target
+                    # if yes, then distance is 0 (considered 'on target)
+                    # if no, then Flist is abs distance of  Fvals[ctr] from target
+                    if fv >= t:
+                        Flist[ctr] = epsilon
+                    else:
+                        Flist[ctr] = abs(t - fv)
+
+                else: #o_thres == 0. #TARGET. default
+                    self.parent.debug_message_printout("ERROR: unrecognized threshold value. Evaluating as TARGET")
+                    Flist[ctr] = abs(t - fv)
+
+                ctr = ctr + 1
+
+        else: #TARGET as default
+            # arrays are already the same dimensions. 
+            # no need to loop and compare to anything
+            Flist = abs(targets - Fvals)
+
+        return Flist
+
+
     def exploitation_mode(self, particle):
         # NOTE: in MATLAB rand() returns a random scalar drawn from the uniform distribution in the interval (0,1).
         # MATLAB implementation: r = rand() * rg

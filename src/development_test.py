@@ -15,11 +15,12 @@
 #
 #
 #   Author(s): Lauren Linkous
-#   Last update: March 13, 2025
+#   Last update: May 18, 2025
 ##--------------------------------------------------------------------\
 
 import time
 import pandas as pd
+import numpy as np
 
 # OPTIMIZER OPTIONS
 from optimizers.surrogate_pso_python import swarm as pso_p_swarm
@@ -72,6 +73,18 @@ class MainTest():
         self.LB = LB
         self.UB = UB
         self.TARGETS = TARGETS
+        
+        # target format. TARGETS = [0, ...] 
+
+        # threshold is same dims as TARGETS
+        # 0 = use target value as actual target. value should EQUAL target
+        # 1 = use as threshold. value should be LESS THAN OR EQUAL to target
+        # 2 = use as threshold. value should be GREATER THAN OR EQUAL to target
+        #DEFAULT THRESHOLD
+        self.THRESHOLD = np.zeros_like(TARGETS) 
+        #THRESHOLD = np.ones_like(TARGETS)
+        #THRESHOLD = [0, 1, 0]
+
 
 
         # "ground truth" Objective function dependent variables
@@ -107,6 +120,7 @@ class MainTest():
         # OPTIMIZER INIT
         self.best_eval = 10      #usually set to 1 because anything higher is too many magnitutes to high to be useful
         parent = self            # NOTE: using 'None' for parents does not work with surrogate model
+        self.evaluate_threshold = True # use target or threshold. True = THRESHOLD, False = EXACT TARGET
         self.suppress_output = True   # Suppress the console output of particle swarm
         self.allow_update = True      # Allow objective call to update state 
         
@@ -191,7 +205,7 @@ class MainTest():
         elif SURROGATE_OPT_CHOICE == 5:
             # 5: cat_swarm_quantum
             # Constant variables
-            oopt_params = {'NO_OF_PARTICLES': [8],   # Number of particles in swarm
+            opt_params = {'NO_OF_PARTICLES': [8],   # Number of particles in swarm
                         'BOUNDARY': [1],            # int boundary 1 = random,      2 = reflecting
                                                     #              3 = absorbing,   4 = invisible
                         'WEIGHTS': [[2]],           # Update vector weights
@@ -335,16 +349,16 @@ class MainTest():
             MP_length_scale = 1.1
             MP_noise = 1e-10
             MP_nu = 3/2
-            self.sm = MaternProcess(length_scale=MP_length_scale, noise=MP_noise, nu=MP_nu)
-            noError, errMsg = self.sm._check_configuration(num_init_points)
+            self.sm_approx = MaternProcess(length_scale=MP_length_scale, noise=MP_noise, nu=MP_nu)
+            noError, errMsg = self.sm_approx._check_configuration(num_init_points)
 
         elif APPROXIMATOR_CHOICE == 8:
             # Lagrangian penalty linear regression vars
             num_init_points = 2
             LLReg_noise = 1e-10
             LLReg_constraint_degree=1
-            self.sm = LagrangianLinearRegression(noise=LLReg_noise, constraint_degree=LLReg_constraint_degree)
-            noError, errMsg = self.sm._check_configuration(num_init_points)
+            self.sm_approx = LagrangianLinearRegression(noise=LLReg_noise, constraint_degree=LLReg_constraint_degree)
+            noError, errMsg = self.sm_approx._check_configuration(num_init_points)
 
         elif APPROXIMATOR_CHOICE == 9:
             # Lagrangian penalty polynomial regression vars
@@ -352,8 +366,8 @@ class MainTest():
             LPReg_degree = 5
             LPReg_noise = 1e-10
             LPReg_constraint_degree = 3
-            self.sm = LagrangianPolynomialRegression(degree=LPReg_degree, noise=LPReg_noise, constraint_degree=LPReg_constraint_degree)
-            noError, errMsg = self.sm._check_configuration(num_init_points)
+            self.sm_approx = LagrangianPolynomialRegression(degree=LPReg_degree, noise=LPReg_noise, constraint_degree=LPReg_constraint_degree)
+            noError, errMsg = self.sm_approx._check_configuration(num_init_points)
 
 
         if noError == False:
@@ -378,7 +392,9 @@ class MainTest():
             self.b_opt = pso_p_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, 
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)  
             
@@ -396,7 +412,9 @@ class MainTest():
             self.b_opt = pso_b_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, 
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)  
                             
@@ -414,7 +432,9 @@ class MainTest():
             self.b_opt = pso_q_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent,  
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)    
 
@@ -436,7 +456,9 @@ class MainTest():
             self.b_opt = catswarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, 
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)     
 
@@ -452,7 +474,9 @@ class MainTest():
             self.b_opt = sand_cat_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, 
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)   
             
@@ -475,7 +499,9 @@ class MainTest():
             self.b_opt = cat_q_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, 
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)     
 
@@ -494,7 +520,9 @@ class MainTest():
             self.b_opt = chicken_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, 
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)    
         
@@ -516,7 +544,9 @@ class MainTest():
             self.b_opt = chicken_i15_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, 
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)    
         
@@ -538,7 +568,9 @@ class MainTest():
             self.b_opt = chicken_q_swarm(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, 
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)    
         
@@ -554,7 +586,9 @@ class MainTest():
             self.b_opt = multi_glods(LB, UB, TARGETS, TOL, MAXIT,
                                     func_F, constr_F,
                                     opt_df,
-                                    parent=parent, 
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=useSurrogateModel, 
                                     surrogateOptimizer=self.sm_opt)   
         else:
