@@ -188,8 +188,8 @@ class MainTest():
                         'SPC': True}              # self-position consideration. boolean.
 
             self.sm_opt_df = pd.DataFrame(opt_params)
-            self.sm_opt  = catswarm    
-
+            self.sm_opt  = catswarm   
+ 
         elif SURROGATE_OPT_CHOICE == 4:
             #4: sand_cat_python
             # Constant variables
@@ -273,9 +273,10 @@ class MainTest():
         elif SURROGATE_OPT_CHOICE == 9:
             # 9: multi_glods_python
             # Constant variables
-            opt_params = {'BP': [0.5],               # Beta Par
-                        'GP': [1],                   # Gamma Par
-                        'SF': [1] }                  # Search Frequency
+            opt_params = {'BP': [0.5],              # Beta Par
+                        'GP': [1],                  # Gamma Par
+                        'SF': [1],                  # Search Frequency
+                        'R_TOL': [10**-6]}           # radial tolerance, NOT ERROR tolerance 
             
             self.sm_opt_df = pd.DataFrame(opt_params)
             self.sm_opt  = multi_glods 
@@ -580,7 +581,8 @@ class MainTest():
             # Constant variables
             opt_params = {'BP': [0.5],               # Beta Par
                         'GP': [1],                   # Gamma Par
-                        'SF': [1] }                  # Search Frequency
+                        'SF': [1],                  # Search Frequency
+                        'R_TOL': [10**-6]}           # radial tolerance, NOT ERROR tolerance 
 
             opt_df = pd.DataFrame(opt_params)
             self.b_opt = multi_glods(LB, UB, TARGETS, TOL, MAXIT,
