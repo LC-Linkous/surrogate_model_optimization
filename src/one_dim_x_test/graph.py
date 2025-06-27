@@ -1,12 +1,12 @@
 #! /usr/bin/python3
 
 ##-------------------------------------------------------------------------------\
-#   pso_basic_multi_glods_surrogate
-#   '.src/one_dim_x_test/graph.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/one_dim_x_test/graph.py'
 #   generates graphs for function based on constraints and configurations
 #
 #   Author(s): Lauren Linkous (LINKOUSLC@vcu.edu)
-#   Last update: June 24, 2024
+#   Last update: June 26, 2025
 ##-------------------------------------------------------------------------------\
 
 
