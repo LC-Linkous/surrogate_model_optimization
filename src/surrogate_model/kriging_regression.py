@@ -1,12 +1,12 @@
 #! /usr/bin/python3
 
 ##--------------------------------------------------------------------\
-#   bayesian_optimization_python
-#   './bayesian_optimization_python/src/surrogate_models/kriging_regression.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/surrogate_models/kriging_regression.py'
 #   Kriging (Gaussian process regression) surrogate model for optimization. 
 #
 #   Author(s): Lauren Linkous 
-#   Last update: December 2, 2024
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 import numpy as np
