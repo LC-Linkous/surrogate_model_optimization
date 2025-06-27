@@ -2,7 +2,7 @@
 
 ##--------------------------------------------------------------------\
 #   surrogate_model_optimization
-#   './surrogate_model_optimization/src/surrogate_chicken_quantum.py'
+#   './surrogate_model_optimization/src/optimizers/surrogate_chicken_quantum.py'
 #   A quantum-inspired chicken swarm optimization class. This class follows the same 
 #
 #   This approach mimics a general and very simple probabilistic approach.
@@ -11,7 +11,7 @@
 #       literature.     
 #
 #   Author(s): Lauren Linkous
-#   Last update: May 18, 2025
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 #! /usr/bin/python3
 
