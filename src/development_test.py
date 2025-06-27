@@ -113,14 +113,15 @@ class MainTest():
         7: Matern      8: Lagrangian Linear Regression  9:Lagrangian Polynomial Regression
         '''
 
-        BASE_OPT_CHOICE = 9
-        SURROGATE_OPT_CHOICE = 9
-        APPROXIMATOR_CHOICE = 4
+        BASE_OPT_CHOICE = 1
+        SURROGATE_OPT_CHOICE = 1
+        APPROXIMATOR_CHOICE = 0
+        
         
         # OPTIMIZER INIT
         self.best_eval = 10      #usually set to 1 because anything higher is too many magnitutes to high to be useful
         parent = self            # NOTE: using 'None' for parents does not work with surrogate model
-        self.evaluate_threshold = True # use target or threshold. True = THRESHOLD, False = EXACT TARGET
+        self.evaluate_threshold = False # use target or threshold. True = THRESHOLD, False = EXACT TARGET
         self.suppress_output = True   # Suppress the console output of particle swarm
         self.allow_update = True      # Allow objective call to update state 
         
@@ -151,7 +152,7 @@ class MainTest():
         elif SURROGATE_OPT_CHOICE == 1:
             # 1: pso_basic
             # Constant variables
-            opt_params = {'NO_OF_PARTICLES': [50],    # Number of particles in swarm
+            opt_params = {'NO_OF_PARTICLES': [1],    # Number of particles in swarm
                         'BOUNDARY': [1],              # int boundary 1 = random,      2 = reflecting
                                                       #              3 = absorbing,   4 = invisible
                         'WEIGHTS': [[[0.7, 1.5, 0.5]]], # Update vector weights
