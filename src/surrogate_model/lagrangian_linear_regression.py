@@ -1,12 +1,12 @@
 #! /usr/bin/python3
 
 ##--------------------------------------------------------------------\
-#   bayesian_optimization_python
-#   './bayesian_optimization_python/src/surrogate_models/lagrangian_linear_regression.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/surrogate_models/lagrangian_linear_regression.py'
 #    Lagrangian penalty linear regression.
 #
 #   Author(s): Lauren Linkous
-#   Last update: March 12, 2025
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 
