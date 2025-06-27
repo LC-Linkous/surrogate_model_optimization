@@ -1,12 +1,12 @@
 #! /usr/bin/python3
 
 ##-------------------------------------------------------------------------------\
-#   pso_basic_multi_glods_surrogate
-#   '.src/one_dim_x_test/constr_F.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/one_dim_x_test/constr_F.py'
 #   constraints function for function compatable with project optimizers
 #
 #   Author(s): Lauren Linkous (LINKOUSLC@vcu.edu)
-#   Last update: March 30, 2024
+#   Last update: June 26, 2025
 ##-------------------------------------------------------------------------------\
 
 def constr_F(x):
