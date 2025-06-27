@@ -39,7 +39,8 @@ class swarm:
                  opt_df,
                  parent=None, 
                  evaluate_threshold=False, obj_threshold=None, 
-                 useSurrogateModel=False, surrogateOptimizer=None): 
+                 useSurrogateModel=False, surrogateOptimizer=None,
+                 decimal_limit = 4):  
 
         # Optional parent class func call to write out values that trigger constraint issues
         self.parent = parent 
@@ -47,6 +48,11 @@ class swarm:
         self.useSurrogateModel = useSurrogateModel # bool for if using surrogate model
         self.surrogateOptimizer = surrogateOptimizer     # pass in the class for the surrogate model
                                                    # optimizer. this is configured as needed 
+
+        self.number_decimals = int(decimal_limit)  # limit the number of decimals
+                                                    # used in cases where real life has limitations on resolution
+
+
 
         #evaluation method for targets
         # True: Evaluate as true targets
@@ -110,24 +116,28 @@ class swarm:
             variation = ubound-lbound
 
 
-            self.M = np.array(np.multiply(self.rng.random((1,np.max([heightl, widthl]))), 
-                                                                variation)+lbound)    
+            # position
+            self.M = np.round(np.array(np.multiply(self.rng.random((1,np.max([heightl, widthl]))), variation)+lbound), self.number_decimals)
+            
+            # velocity
+            self.V = np.round(np.array(np.multiply(self.rng.random((1,np.max([heightl,widthl]))), vlimit)), self.number_decimals)
 
-            self.V = np.array(np.multiply(self.rng.random((1,np.max([heightl,widthl]))), 
-                                                                     vlimit))
+                                         
 
             for i in range(2,int(NO_OF_PARTICLES)+1):
                 
+                M = np.round(np.array(np.multiply(self.rng.random((1,np.max([heightl, widthl]))), variation)+lbound), self.number_decimals)
+
+                V = np.round(np.array(np.multiply(self.rng.random((1,np.max([heightl,widthl]))), vlimit)), self.number_decimals)
+
+
                 self.M = \
                     np.vstack([self.M, 
-                               np.multiply( self.rng.random((1,np.max([heightl, widthl]))), 
-                                                                               variation) 
-                                                                               + lbound])
+                               M])
 
                 self.V = \
                     np.vstack([self.V,
-                               np.multiply( self.rng.random((1,np.max([heightl, widthl]))), 
-                                                                               vlimit)])
+                               V])
             '''
             self.M                      : An array of current particle locations.
             self.V                      : An array of current particle velocities.
@@ -193,7 +203,8 @@ class swarm:
             # call up to the parent function to define and fit the surrogate func, 
             # and set up the surrogate optimizer 
             surrogateOptimizer = self.parent.fit_and_create_surogate(self.M, self.F_Pb,self.surrogateOptimizer)
-
+            print(surrogateOptimizer)
+            
 
             best_eval = 10 # set high for testing
             # sometimes an optimizer doesn't call the objective function, so only print out when it does
@@ -207,6 +218,9 @@ class swarm:
                 # when it is allowed to update and return 
                 # control to optimizer
                 surrogateOptimizer.call_objective(allow_update=True)
+
+
+
                 iter, eval = surrogateOptimizer.get_convergence_data()
                 if (eval < best_eval) and (eval != 0):
                     best_eval = eval
@@ -241,11 +255,22 @@ class swarm:
     def call_objective(self, allow_update):
         if self.Active[self.current_particle]:
             # call the objective function. If there's an issue with the function execution, 'noError' returns False
+            print("M INPUT TO OBJECTIVE FUNC")
+            print("self.M[self.current_particle]")
+            print(self.M[self.current_particle])
             newFVals, noError = self.obj_func(self.M[self.current_particle], self.output_size)
+            print("SELF.OUTPUTSIZE")
+            print(self.output_size)
+            print("NEW FVALS FROM OBJECTIVE FUNC")
+            print(newFVals)
+
+
+
             if noError == True:
                 self.Fvals = np.array(newFVals).reshape(-1, 1)
                 if allow_update:
                     # EVALUATE OBJECTIVE FUNCTION - TARGET OR THRESHOLD
+
                     self.Flist = self.objective_function_evaluation(self.Fvals, self.targets)# abs(self.targets - self.Fvals)
                     self.iter = self.iter + 1
                     self.allow_update = 1
@@ -315,6 +340,11 @@ class swarm:
         else: #TARGET as default
             # arrays are already the same dimensions. 
             # no need to loop and compare to anything
+            # print("TARGETS")
+            # print(targets)
+            # print("Fvals")
+            # print(Fvals)
+
             Flist = abs(targets - Fvals)
 
         return Flist
@@ -323,9 +353,10 @@ class swarm:
         for i in range(0,np.shape(self.V)[1]):        
 
             self.V[particle,i] = \
-                self.weights[0][0]* self.rng.random()*self.V[particle,i] \
+                np.round(self.weights[0][0]* self.rng.random()*self.V[particle,i] \
                 + self.weights[0][1]*self.rng.random()*(self.Pb[particle,i]-self.M[particle,i]) \
                 + self.weights[0][2]*self.rng.random()*(self.Gb[i]-self.M[particle,i])
+                , self.number_decimals)
             
     def check_bounds(self, particle):
         update = 0
@@ -342,12 +373,14 @@ class swarm:
         # and may cause a buffer overflow with large exponents (a bug that was found experimentally)
         update = self.check_bounds(particle) or not self.constr_func(self.M[particle])
         if update > 0:
-            while(self.check_bounds(particle)>0) or (self.constr_func(self.M[particle])==False):
-                variation = self.ubound-self.lbound
-                self.M[particle] = \
-                    np.squeeze(self.rng.random() * 
-                                np.multiply(np.ones((1,np.shape(self.M)[1])),
-                                            variation) + self.lbound)
+            while (self.check_bounds(particle) > 0) or (self.constr_func(self.M[particle]) == False):
+                variation = self.ubound - self.lbound
+                self.M[particle] = np.round(
+                    np.squeeze(
+                        self.rng.random() *
+                        np.multiply(np.ones((1, np.shape(self.M)[1])), variation) +
+                        self.lbound
+                    ), self.number_decimals)
             
     def reflecting_bound(self, particle):        
         update = self.check_bounds(particle)
@@ -399,8 +432,8 @@ class swarm:
     
     def update_point(self,particle):
         self.Mlast = 1*self.M[particle]
-        self.V[particle] = self.floating_point_error_handler("self.V[particle] ", self.V[particle] )        
-        self.M[particle] = self.M[particle] + self.V[particle]
+        # if enforcing decimal limit, no need to check floating point error handler anymore. 
+        self.M[particle] = np.round(self.M[particle] + self.V[particle], self.number_decimals)
 
     def converged(self):
         convergence = np.linalg.norm(self.F_Gb) < self.E_TOL
@@ -428,7 +461,7 @@ class swarm:
                 "Absolute mean deviation\n" + \
                 str(self.absolute_mean_deviation_of_particles()) +"\n" + \
                 "-----------------------------"
-            self.debug_message_printout(msg)
+            # self.debug_message_printout(msg)
             
 
         if self.allow_update:
