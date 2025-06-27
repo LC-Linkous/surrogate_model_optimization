@@ -1,14 +1,14 @@
 #! /usr/bin/python3
 
 ##--------------------------------------------------------------------\
-#   pso_basic_multi_glods_surrogate
-#   '.src/lundquist_3_var/constr_F.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/lundquist_3_var/constr_F.py'
 #   Function for objective function constraints.
 #   Has 2 checks: 1 for the function limitations, 1 for float size
 #   Returns True if x array passes constraints check, False otherwise   
 #
 #   Author(s): Jonathan Lundquist, Lauren Linkous
-#   Last update: May 28, 2024
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 
