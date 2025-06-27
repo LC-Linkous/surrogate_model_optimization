@@ -719,18 +719,4 @@ if __name__ == "__main__":
 
     mt = MainTest()
 
-    # get DF and put it to csv.
-    data = mt.b_opt.export_swarm()
-    data_df = pd.DataFrame(data)
-    print(data_df)
-    data_df.to_pickle('output_data_df.pkl') #, index=False)
-
-    # load csv
-    data_df = pd.read_pickle('output_data_df.pkl') #, index_col=False) 
-    mt.b_opt.import_swarm(data_df)
-
     mt.run()
-
-    # csv can't do 2d arrays
-    #TypeError: array(2) (numpy-scalar) is not JSON serializable at the moment
- 
