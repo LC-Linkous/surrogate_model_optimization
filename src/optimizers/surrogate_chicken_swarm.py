@@ -39,7 +39,8 @@ class swarm:
                  opt_df,
                  parent=None, 
                  evaluate_threshold=False, obj_threshold=None, 
-                 useSurrogateModel=False, surrogateOptimizer=None): 
+                 useSurrogateModel=False, surrogateOptimizer=None,
+                 decimal_limit = 4): 
 
         # Optional parent class func call to write out values that trigger constraint issues
         self.parent = parent 
@@ -47,6 +48,11 @@ class swarm:
         self.useSurrogateModel = useSurrogateModel # bool for if using surrogate model
         self.surrogateOptimizer = surrogateOptimizer     # pass in the class for the surrogate model
                                                    # optimizer. this is configured as needed 
+
+
+        self.number_decimals = int(decimal_limit)  # limit the number of decimals
+                                              # used in cases where real life has limitations on resolution
+
 
 
         #evaluation method for targets
@@ -166,10 +172,10 @@ class swarm:
             self.chicken_info = np.array([0, 0, -1])
 
             #randomly initialize the positions 
-            self.M = np.vstack(np.multiply(self.rng.random((np.max([heightl, 
-                                                                     widthl]),1)), 
-                                                                     variation) + 
-                                                                     lbound)    
+            self.M = np.round(np.array(np.multiply(self.rng.random((1,np.max([heightl, widthl]))), variation)+lbound), self.number_decimals)
+            
+           
+
 
 
             if NO_OF_PARTICLES > 1:
@@ -194,10 +200,10 @@ class swarm:
             for i in range(2,int(NO_OF_PARTICLES)+1):
                 # set initial location
                 self.M = \
-                    np.vstack([self.M, 
+                    np.round(np.vstack([self.M, 
                                np.multiply( self.rng.random((1,np.max([heightl, widthl]))), 
                                                                                variation) 
-                                                                               + lbound])
+                                                                               + lbound]), self.number_decimals)
                 if classList[i-1] == 0: #rooster
                     # assign to the next group (i-1), and done.
                     self.chicken_info = \
@@ -449,7 +455,7 @@ class swarm:
 
 
         #update new location based on random()
-        self.M[particle] = self.M[particle]*(1+self.rng.normal(0, sig_squared))
+        self.M[particle] = np.round(self.M[particle]*(1+self.rng.normal(0, sig_squared)), self.number_decimals)
     
 
     def move_hen(self, particle):
@@ -521,7 +527,8 @@ class swarm:
         term_2 = clipped_term2
 
         # new_loc = old_loc + term_1 + term_2
-        self.M[particle] = self.M[particle] + term_1 + term_2
+        self.M[particle] = np.round(self.M[particle] + term_1 + term_2, self.number_decimals)
+
 
 
     def move_chick(self, particle):
@@ -531,8 +538,9 @@ class swarm:
 
         mother_idx = int(self.chicken_info[particle][2]) # the the idx of the mother chicken
         mother_loc = self.M[mother_idx]
-        self.M[particle] = self.M[particle] + self.rng.choice([0,2])*(mother_loc-self.M[particle])
-
+        self.M[particle] = np.round(self.M[particle] + self.rng.choice([0,2])*(mother_loc-self.M[particle]), self.number_decimals)
+    
+    
     def reorganize_swarm(self):
         # rank the chickens' fitness vals and establish hierarchial order
         # divide swarm into groups, determine relationship between mother hens and chicks
@@ -631,13 +639,16 @@ class swarm:
         # and may cause a buffer overflow with large exponents (a bug that was found experimentally)
         update = self.check_bounds(particle) or not self.constr_func(self.M[particle])
         if update > 0:
-            while(self.check_bounds(particle)>0) or (self.constr_func(self.M[particle])==False): 
-                variation = self.ubound-self.lbound
-                self.M[particle] = \
-                    np.squeeze(self.rng.random() * 
-                                np.multiply(np.ones((1,np.shape(self.M)[1])),
-                                            variation) + self.lbound)
-            
+            while (self.check_bounds(particle) > 0) or (self.constr_func(self.M[particle]) == False):
+                variation = self.ubound - self.lbound
+                self.M[particle] = np.round(
+                    np.squeeze(
+                        self.rng.random() *
+                        np.multiply(np.ones((1, np.shape(self.M)[1])), variation) +
+                        self.lbound
+                    ), self.number_decimals)
+
+
     def reflecting_bound(self, particle):        
         update = self.check_bounds(particle)
         constr = self.constr_func(self.M[particle])
