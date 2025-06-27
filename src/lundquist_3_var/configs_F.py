@@ -1,14 +1,14 @@
 #! /usr/bin/python3
 
 ##--------------------------------------------------------------------\
-#   pso_basic_multi_glods_surrogate
-#   '.src/lundquist_3_var/configs_F.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/lundquist_3_var/configs_F.py'
 #   Constant values for objective function. Formatted for
 #       automating objective function integration
 #
 #
 #   Author(s): Lauren Linkous, Jonathan Lundquist
-#   Last update: May 25, 2024
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 import sys
 try: # for outside func calls
