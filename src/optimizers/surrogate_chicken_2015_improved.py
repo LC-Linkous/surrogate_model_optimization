@@ -42,7 +42,8 @@ class swarm:
                  opt_df,
                  parent=None, 
                  evaluate_threshold=False, obj_threshold=None, 
-                 useSurrogateModel=False, surrogateOptimizer=None): 
+                 useSurrogateModel=False, surrogateOptimizer=None,
+                 decimal_limit = 4):
         
 
         # Optional parent class func call to write out values that trigger constraint issues
@@ -51,6 +52,12 @@ class swarm:
         self.useSurrogateModel = useSurrogateModel # bool for if using surrogate model
         self.surrogateOptimizer = surrogateOptimizer     # pass in the class for the surrogate model
                                                    # optimizer. this is configured as needed 
+
+
+        self.number_decimals = int(decimal_limit)  # limit the number of decimals
+                                              # used in cases where real life has limitations on resolution
+
+
 
         #evaluation method for targets
         # True: Evaluate as true targets
@@ -200,10 +207,10 @@ class swarm:
             for i in range(2,int(NO_OF_PARTICLES)+1):
                 # set initial location
                 self.M = \
-                    np.vstack([self.M, 
+                    np.round(np.vstack([self.M, 
                                np.multiply( self.rng.random((1,np.max([heightl, widthl]))), 
                                                                                variation) 
-                                                                               + lbound])
+                                                                               + lbound]), self.number_decimals)
                 if classList[i-1] == 0: #rooster
                     # assign to the next group (i-1), and done.
                     self.chicken_info = \
@@ -440,7 +447,7 @@ class swarm:
 
     def move_rooster(self, particle):
         # epsilon = 'smallest system constant'. improvised.
-        epsilon = 10e-50 
+        epsilon = 10e-30 
 
         # choose a random rooster
         rooster_arr = np.arange(self.RN)
@@ -456,12 +463,12 @@ class swarm:
             # exp((fitness_random_rooster - fitness_this_rooster)/(abs(fitness_this_rooster)-epsilon))
             #sig_squared = np.exp((random_rooster_fitness-this_rooster_fitness)/(abs(this_rooster_fitness)+epsilon))
             # -709.00 and 709.00 are the integer limits to np.exp() on system that handles float64 at most (Windows)
-            clipped_val = np.clip(((random_rooster_fitness-this_rooster_fitness)/(abs(this_rooster_fitness)+epsilon)), -709.00, 709.00)
+            clipped_val = np.clip(((random_rooster_fitness-this_rooster_fitness)/(abs(this_rooster_fitness)+epsilon)), -700.00, 700.00)
             sig_squared = np.exp(clipped_val)
 
 
         #update new location based on random()
-        self.M[particle] = self.M[particle]*(1+self.rng.normal(0, sig_squared))
+        self.M[particle] = np.round(self.M[particle]*(1+self.rng.normal(0, sig_squared)), self.number_decimals)
     
 
     def move_hen(self, particle):
@@ -493,7 +500,7 @@ class swarm:
         fitness_this_chicken = np.linalg.norm(self.F_Pb[particle])
 
         # epsilon = 'smallest system constant'. improvised.
-        epsilon = 10e-50 
+        epsilon = 10e-30 
 
         # exp((FitnessThisChicken-FitnessRoosterGroupmate)/(abs(FitnessThisChicken)+epsilon))
         #S1 = np.exp((fitness_this_chicken-fitness_rooster)/(np.abs(fitness_this_chicken) + epsilon))
@@ -505,16 +512,16 @@ class swarm:
         # these clipped bounds are effectively are zero and inf
         # term_1 = S1*self.rng.uniform(0,1)*(rooster_loc-self.M[particle])
         # still dealing with overflow issues. apply cap to S1
-        if S1 > 10e50:
-            S1 = 10e50
-        elif S1 < -10e50:
-            S1 = -10e50
-        clipped_term1 = np.clip((S1*self.rng.uniform(0,1)*(rooster_loc-self.M[particle])), -10e50, 10e10)
+        if S1 > 10e30:
+            S1 = 10e30
+        elif S1 < -10e30:
+            S1 = -10e30
+        clipped_term1 = np.clip((S1*self.rng.uniform(0,1)*(rooster_loc-self.M[particle])), -10e30, 10e10)
         term_1 = clipped_term1
 
         #S2 = np.exp(float(fitness_random_chicken-fitness_this_chicken))
         #np.exp(...) throws overflow errors. Using clip as a generic catch
-        clipped_val = np.clip((fitness_random_chicken-fitness_this_chicken), -709.00, 709.00)
+        clipped_val = np.clip((fitness_random_chicken-fitness_this_chicken), -700.00, 700.00)
         S2 = np.exp(clipped_val)
         #S2*RANDOM(0-to-1)*(LoctionRandomChickenInSwarm-thisChickenLocation)
 
@@ -524,16 +531,16 @@ class swarm:
         #term_2 = S2*self.rng.uniform(0,1)*(random_chicken_loc-self.M[particle])
         # This still causes overflow:
         # clipped_term2 = np.clip((S2*self.rng.uniform(0,1)*(random_chicken_loc-self.M[particle])), -10e50, 10e10)
-        if S2 > 10e50:
-            S2 = 10e50
-        elif S2 < -10e50:
-            S2 = -10e50
+        if S2 > 10e30:
+            S2 = 10e30
+        elif S2 < -10e30:
+            S2 = -10e30
 
-        clipped_term2 = np.clip((S2*self.rng.uniform(0,1)*(random_chicken_loc-self.M[particle])), -10e50, 10e10)
+        clipped_term2 = np.clip((S2*self.rng.uniform(0,1)*(random_chicken_loc-self.M[particle])), -10e30, 10e10)
         term_2 = clipped_term2
 
         # new_loc = old_loc + term_1 + term_2
-        self.M[particle] = self.M[particle] + term_1 + term_2
+        self.M[particle] = np.round(self.M[particle] + term_1 + term_2, self.number_decimals)
 
 
     def move_chick(self, particle):
@@ -551,7 +558,7 @@ class swarm:
         rooster_idx = int(self.chicken_info[particle][1]) # the group number of the mother chicken
         rooster_loc = self.M[rooster_idx] #roosters are always the first RN number of entries to the chicken_info array
 
-        self.M[particle] = self.W*self.M[particle] + self.rng.choice([0,2])*(mother_loc-self.M[particle]) + self.C*(rooster_loc-self.M[particle])
+        self.M[particle] = np.round(self.W*self.M[particle] + self.rng.choice([0,2])*(mother_loc-self.M[particle]) + self.C*(rooster_loc-self.M[particle]), self.number_decimals)
 
 
 
@@ -653,13 +660,16 @@ class swarm:
         # and may cause a buffer overflow with large exponents (a bug that was found experimentally)
         update = self.check_bounds(particle) or not self.constr_func(self.M[particle])
         if update > 0:
-            while(self.check_bounds(particle)>0) or (self.constr_func(self.M[particle])==False): 
-                variation = self.ubound-self.lbound
-                self.M[particle] = \
-                    np.squeeze(self.rng.random() * 
-                                np.multiply(np.ones((1,np.shape(self.M)[1])),
-                                            variation) + self.lbound)
-            
+            while (self.check_bounds(particle) > 0) or (self.constr_func(self.M[particle]) == False):
+                variation = self.ubound - self.lbound
+                self.M[particle] = np.round(
+                    np.squeeze(
+                        self.rng.random() *
+                        np.multiply(np.ones((1, np.shape(self.M)[1])), variation) +
+                        self.lbound
+                    ), self.number_decimals)
+                
+                
     def reflecting_bound(self, particle):        
         update = self.check_bounds(particle)
         constr = self.constr_func(self.M[particle])
