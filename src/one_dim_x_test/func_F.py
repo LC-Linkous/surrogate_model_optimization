@@ -1,12 +1,12 @@
 #! /usr/bin/python3
 
 ##-------------------------------------------------------------------------------\
-#   pso_basic_multi_glods_surrogate
-#   '.src/one_dim_x_test/func_F.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/one_dim_x_test/func_F.py'
 #   objective function for function compatable with project optimizers
 #
 #   Author(s): Lauren Linkous (LINKOUSLC@vcu.edu)
-#   Last update: May 28, 2024
+#   Last update: June 26, 2025
 ##-------------------------------------------------------------------------------\
 
 import numpy as np
