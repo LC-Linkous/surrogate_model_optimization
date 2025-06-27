@@ -2,11 +2,11 @@
 
 ##--------------------------------------------------------------------\
 #   surrogate_model_optimization
-#   './surrogate_model_optimization/src/surrogate_chicken_swarm.py'
+#   './surrogate_model_optimization/src/optimizers/surrogate_chicken_swarm.py'
 #   A basic chicken swarm optimization class. 
 #
 #   Author(s): Lauren Linkous, Jonathan Lundquist
-#   Last update: May 18, 2025
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 
