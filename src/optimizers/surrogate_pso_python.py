@@ -2,7 +2,7 @@
 
 ##--------------------------------------------------------------------\
 #   surrogate_model_optimization
-#   './surrogate_model_optimization/src/surrogate_pso_python.py'
+#   './surrogate_model_optimization/src/optimizers/surrogate_pso_python.py'
 #   Particle swarm class featuring an adaptive time step and mean
 #       distribution. This class has been modified from the original
 #       to include message passing for UI integration, and underflow 
@@ -11,7 +11,7 @@
 #       
 #
 #   Author(s): Jonathan Lundquist, Lauren Linkous
-#   Last update: May 18, 2025
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 import numpy as np
