@@ -1,13 +1,13 @@
 #! /usr/bin/python3
 
 ##--------------------------------------------------------------------\
-#   bayesian_optimization_python
-#   './bayesian_optimization_python/src/surrogate_models/polynomial_chaos_expansion.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/surrogate_models/polynomial_chaos_expansion.py'
 #   Polynomial Chaos Expansion surrogate model for optimization. 
 #       #https://en.wikipedia.org/wiki/Polynomial_chaos
 #
 #   Author(s): Lauren Linkous 
-#   Last update: December 2, 2024
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 
