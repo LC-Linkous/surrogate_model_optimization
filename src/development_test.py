@@ -111,11 +111,12 @@ class MainTest():
         0: RBF      1: Gaussian Process         2: Kriging       3:Polynomial Regression
         4: Polynomial Chaos Expansion  5: KNN regression   6: Decision Tree Regression
         7: Matern      8: Lagrangian Linear Regression  9:Lagrangian Polynomial Regression
+        # RBF can be finicky with some configurations. This is being worked on.
         '''
 
         BASE_OPT_CHOICE = 2
         SURROGATE_OPT_CHOICE = 1
-        APPROXIMATOR_CHOICE = 0
+        APPROXIMATOR_CHOICE = 3
         
         
         # OPTIMIZER INIT
