@@ -1,14 +1,14 @@
 #! /usr/bin/python3
 
 ##--------------------------------------------------------------------\
-#   pso_basic_multi_glods_surrogate
-#   '.src/lundquist_3_var/func_F.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/lundquist_3_var/func_F.py'
 #   Function for objective function evaluation.
 #   Has checks for floating point error, but these should never trigger
 #       if constraints have been properly applied.
 #
 #   Author(s): Lauren Linkous, Jonathan Lundquist
-#   Last update: May 28, 2024
+#   Last update: June 26, 2025
 ##-------------------------------------------------------------------------------\
 
 import numpy as np
