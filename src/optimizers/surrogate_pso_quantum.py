@@ -2,7 +2,7 @@
 
 ##--------------------------------------------------------------------\
 #   surrogate_model_optimization
-#   './surrogate_model_optimization/src/surrogate_pso_quantum.py'
+#   './surrogate_model_optimization/src/optimizers/surrogate_pso_quantum.py'
 #   'quantum' particle swarm class. This class has been modified from the original
 #       to include message passing for UI integration, and underflow 
 #       and overflow min/max caps to accommodate wider user input
@@ -11,7 +11,7 @@
 #
 #
 #   Author(s): Lauren Linkous, Jonathan Lundquist
-#   Last update: May 18, 2025
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 import numpy as np
