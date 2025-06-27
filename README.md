@@ -1,14 +1,9 @@
 # surrogate_model_optimization
 
-## IN PROGRESS - UNSTABLE, LIMITED DOCUMENTATION
+This repository features the core AntennaCAT optimizer set with surrogate model capabilities. It is specifically for experimental work as features are added for the main [AntennaCAT software](https://github.com/LC-Linkous/AntennaCalculationAutotuningTool) and added as a level of transparency. This repo is, when stable, for unit testing and development. This should NOT be the entry point for testing as it has fewer debug options.  
 
+For the specifics of each optimizer, refer to their repository or branch. The original versions of the optimizers can be found at:
 
-This repository features the core AntennaCAT optimizers with surrogate model capabilities. It is specifically for unit testing and development. 
-
-
-
-
-The original versions of the optimizers can be found at:
 | Base Optimizer | Alternate Version | Quantum-Inspired Optimizer | Surrogate Model Version |
 | ------------- | ------------- | ------------- |------------- |
 | [pso_python](https://github.com/LC-Linkous/pso_python) | [pso_basic](https://github.com/LC-Linkous/pso_python/tree/pso_basic) | [pso_quantum](https://github.com/LC-Linkous/pso_quantum)  | all versions are options in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization)|
@@ -19,12 +14,8 @@ The original versions of the optimizers can be found at:
 | [multi_glods_python](https://github.com/LC-Linkous/multi_glods_python)| GLODS <br> DIRECT | - | multiGLODS option in [surrogate_model_optimization](https://github.com/LC-Linkous/surrogate_model_optimization)|
 
 
-The PSO optimizer is modified from the [pso_python](https://github.com/jonathan46000/pso_python) by [jonathan46000](https://github.com/jonathan46000), an adaptive timestep PSO optimizer, for data collection baseline. This repo removes the adaptive time modulation step of pso_python.
 
-The python-based MultiGLODS optimizer is from [multi_glods_python](https://github.com/jonathan46000/multi_glods_python) by [jonathan46000](https://github.com/jonathan46000). The [multi_glods_python](https://github.com/jonathan46000/multi_glods_python) repository is a Python translation of MATLAB MultiGLODS 0.1 (with random search method only). Please see the [MultiGLODS](#multiglods) and [Translation of MultiGLODS to Python](#translation-of-multiglods-to-python) sections for more information about the translation of the code and the original publication.
-
-The surrogate model approximators were originally featured in [bayesian_optimization_python](https://github.com/LC-Linkous/bayesian_optimization_python) by [LC-Linkous](https://github.com/LC-Linkous).  See [References](#references) for the running list of references as optimizers and surrogate models approximators are added/edited, and features are updated.
-
+The surrogate model approximators were originally featured in [bayesian_optimization_python](https://github.com/LC-Linkous/bayesian_optimization_python) by [LC-Linkous](https://github.com/LC-Linkous).  See [References](#references) for the running list of references as optimizers and surrogate models approximators are added/edited, and features are updated. The references are in no particular order and are intended as a collection of relevant information for anyone interested in more information. Actual citations for optimizers or a process can be found in the original optimizer repos or the associated publications.
 
 ## Table of Contents
 * [Requirements](#requirements)
@@ -35,10 +26,9 @@ The surrogate model approximators were originally featured in [bayesian_optimiza
 * [References](#references)
 * [Publications and Integration](#publications-and-integration)
 
-
 ## Requirements
 
-This project requires numpy and pandas for the optimization models. matplotlib is used for creating a preview of the mathematical functions used with the objective function calls. 
+This project requires numpy and pandas for the optimization models. matplotlib is used for creating a preview of the mathematical functions used with the objective function calls.
 
 Use 'pip install -r requirements.txt' to install the following dependencies:
 
@@ -68,12 +58,127 @@ pip install numpy, pandas, matplotlib
 ```
 
 
-
 ## Implementation
 
 ### Initialization 
 
-Initialization is currently being streamlined. It is dependent based on the layering of the surrogate models and base optimizer. This will be documented later.
+Initialization is currently being streamlined. It is dependent based on the layering of the surrogate models and base optimizer. There is no elegant solution for development, but it is well documented. 
+
+The `./src/development_test.py` file is the main entry point for this repo. This file contains:
+
+1. Setup and configuration for the approximation functions used to create the surrogate models
+2. Setup and configuration for the surrogate model optimizer, sometimes referred to as the 'internal optimizer'
+3. Setup and configuration for the driving optimizer, sometimes referred to as the 'base optimizer'.
+
+A the top of the file, there are three `CONSTANTS` used to set integer values for an if/else statement. All optimizers and approximator functions are set with defaults.
+
+```python
+        '''
+        BASE_OPT_CHOICE & SURROGATE_OPT_CHOICE  
+        0: pso_python            1: pso_basic                     2: pso_quantum
+        3: cat_swarm_python      4: sand_cat_python               5: cat_swarm_quantum
+        6: chicken_swarm_python  7: 2015_improved_chicken_swarm   8: chicken_swarm_quantum
+        9: multi_glods_python
+
+        NOTE: multi_glods_python canNOT (currently) be used as a base optimizer with 
+        a surrogate model optimizer. It can be used as the surrogate model optimizer.
+        All models CAN be used stand-alone without a surrogate model 
+        '''
+
+        '''
+        APPROXIMATOR_CHOICE
+        0: RBF      1: Gaussian Process         2: Kriging       3:Polynomial Regression
+        4: Polynomial Chaos Expansion  5: KNN regression   6: Decision Tree Regression
+        7: Matern      8: Lagrangian Linear Regression  9:Lagrangian Polynomial Regression
+        '''
+
+        BASE_OPT_CHOICE = 1
+        SURROGATE_OPT_CHOICE = 1
+        APPROXIMATOR_CHOICE = 2
+
+```
+
+Default class values are set next.
+
+```python
+
+        # OPTIMIZER INIT
+        self.best_eval = 10      #usually set to 1 because anything higher is too many magnitudes to high to be useful
+        parent = self            # NOTE: using 'None' for parents does not work with surrogate model
+        self.evaluate_threshold = False # use target or threshold. True = THRESHOLD, False = EXACT TARGET
+        self.suppress_output = True   # Suppress the console output of particle swarm
+        self.allow_update = True      # Allow objective call to update state 
+        
+        useSurrogateModel  = True   # The optimizers can be run without an internal optimizer
+        self.sm_approx = None       # the approximator 
+        self.sm_opt = None          # the surrogate model optimizer
+        self.sm_opt_df = None       # dataframe with surrogate model optimizer params
+        self.b_opt  = None          # the base  optimizer
+        self.opt_df = None          # dataframe with optimizer params
+        
+```
+
+When the surrogate optimizers are set, the CLASSES and DATAFRAME are saved as variables. The driving optimizer will create the internal optimizer as needed using the same LIMITS, BOUNDARY, TARGETS, and THESHOLDS shared by both. 
+
+```python
+        if SURROGATE_OPT_CHOICE == 0:
+            # 0: pso_python
+            # Constant variables
+            opt_params = {'NO_OF_PARTICLES': [50],    # Number of particles in swarm
+                        'T_MOD': [0.65],              # Variable time-step extinction coefficient
+                        'BOUNDARY': [1],              # int boundary 1 = random,      2 = reflecting
+                                                      #              3 = absorbing,   4 = invisible
+                        'WEIGHTS': [[[0.7, 1.5, 0.5]]], # Update vector weights
+                        'VLIM':  [0.5] }              # Initial velocity limit
+
+            self.sm_opt_df  = pd.DataFrame(opt_params)
+            self.sm_opt  = pso_p_swarm
+
+    [...]
+```            
+
+The approximation functions are configured and initialized once, and then used for the optimization. These functions have memory.
+
+```python
+        if APPROXIMATOR_CHOICE == 0:
+            # RBF Network vars
+            RBF_kernel  = 'gaussian' #options: 'gaussian', 'multiquadric'
+            RBF_epsilon = 1.0
+            num_init_points = 1
+            self.sm_approx = RBFNetwork(kernel=RBF_kernel, epsilon=RBF_epsilon)  
+            noError, errMsg = self.sm_approx._check_configuration(num_init_points, RBF_kernel)
+
+    [...]
+```            
+
+The driving optimizer, or base optimizer, is set last so that the internal optimizer can be passed in. 
+
+```python
+        # BASE OPTIMIZER SETUP
+        if BASE_OPT_CHOICE == 0:
+            # 0: pso_python
+            # Constant variables
+            opt_params = {'NO_OF_PARTICLES': [50],    # Number of particles in swarm
+                        'T_MOD': [0.65],              # Variable time-step extinction coefficient
+                        'BOUNDARY': [1],              # int boundary 1 = random,      2 = reflecting
+                                                    #              3 = absorbing,   4 = invisible
+                        'WEIGHTS': [[[0.7, 1.5, 0.5]]], # Update vector weights
+                        'VLIM':  [0.5] }              # Initial velocity limit
+
+            opt_df = pd.DataFrame(opt_params)
+            self.b_opt = pso_p_swarm(LB, UB, TARGETS, TOL, MAXIT,
+                                    func_F, constr_F,
+                                    opt_df,
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
+                                    useSurrogateModel=useSurrogateModel, 
+                                    surrogateOptimizer=self.sm_opt,
+                                    decimal_limit=4)  
+            
+
+    [...]
+```            
 
 
 
@@ -87,7 +192,6 @@ Most optimizers have 4 different types of bounds, Random (Particles that leave t
 Some updates have not incorporated appropriate handling for all boundary conditions. This bug is known and is being worked on. The most consistent boundary type at the moment is Random. If constraints are violated, but bounds are not, currently random bound rules are used to deal with this problem. 
 
 
-
 ### Multi-Objective Optimization
 The no preference method of multi-objective optimization, but a Pareto Front is not calculated. Instead, the best choice (smallest norm of output vectors) is listed as the output.
 
@@ -95,13 +199,11 @@ The no preference method of multi-objective optimization, but a Pareto Front is 
 
 The objective function is handled in two parts. 
 
-
 * First, a defined function, such as one passed in from `func_F.py` (see examples), is evaluated based on current particle locations. This allows for the optimizers to be utilized in the context of 1. benchmark functions from the objective function library, 2. user defined functions, 3. replacing explicitly defined functions with outside calls to programs such as simulations or other scripts that return a matrix of evaluated outputs. 
 
 * Secondly, the actual objective function is evaluated. In the AntennaCAT set of optimizers, the objective function evaluation is either a `TARGET` or `THRESHOLD` evaluation. For a `TARGET` evaluation, which is the default behavior, the optimizer minimizes the absolute value of the difference of the target outputs and the evaluated outputs. A `THRESHOLD` evaluation includes boolean logic to determine if a 'greater than or equal to' or 'less than or equal to' or 'equal to' relation between the target outputs (or thresholds) and the evaluated outputs exist. 
 
 Future versions may include options for function minimization when target values are absent. 
-
 
 
 #### Creating a Custom Objective Function
@@ -170,7 +272,6 @@ def func_F(X, NO_OF_OUTS=1):
 
     return [F], noErrors
 ```
-
 
 #### Internal Objective Function Example
 
@@ -270,11 +371,9 @@ Where `self.Fvals` is a re-arranged and error checked returned value from the pa
 When using a THRESHOLD, the `Flist` value corresponding to the target is set to epsilon (the smallest system value) if the evaluated `func_F` value meets the threshold condition for that target item. If the threshold is not met, the absolute value of the difference of the target output and the evaluated output is used. With a THRESHOLD configuration, each value in the numpy array is evaluated individually, so some values can be 'greater than or equal to' the target while others are 'equal' or 'less than or equal to' the target. 
 
 
-
 ## Example Testing
 
 Currently, `development_test.py` is the only file for testing multiple combinations of base optimizers, surrogate models, and linear approximators. 
-
 
 To choose one of the 3 included objective functions:
 The internal objective functions are included at the top of the file. Uncomment ONE of the functions to use it. If multiple imports are uncommented, the lowest function is the one the compiler will use.
@@ -316,48 +415,8 @@ To select optimizers and approximators:
 
 Individual optimizer parameters currently need to be adjusted with optimizer creation. In the future, this will be more streamlined for unit testing.
 
+To change the default values of the optimizers or approximation functions, they need to be manually edited within the `IF/ELSE` structure. There are too many variables to have an collection at the top. 
 
-
-
-The internal objective functions are included at the top of the file. Uncomment ONE of the functions to use it. If multiple imports are uncommented, the lowest function is the one the compiler will use.
-
-```python
-# OBJECTIVE FUNCTION SELECTION -UNCOMMENT HERE TO SELECT
-#import one_dim_x_test.configs_F as func_configs     # single objective, 1D input
-#import himmelblau.configs_F as func_configs         # single objective, 2D input
-import lundquist_3_var.configs_F as func_configs     # multi objective function
-```
-
-The surrogate models are included at the top of the file. DO NOT comment these imports out. Instead, comment/uncomment them in the \_init\_ function. This is done so that the default configurations can be set in \_init\_. The surrogate models do not share the same initialization variables due to their broad nature of functionality. 
-
-DO NOT comment these:
-```python
-# SURROGATE MODEL OPTIONS - UNCOMMENT IN _init_ to select
-from surrogate_models.RBF_network import RBFNetwork
-from surrogate_models.gaussian_process import GaussianProcess
-from surrogate_models.kriging_regression import Kriging
-from surrogate_models.polynomial_regression import PolynomialRegression
-from surrogate_models.polynomial_chaos_expansion import PolynomialChaosExpansion
-from surrogate_models.KNN_regression import KNNRegression
-from surrogate_models.decision_tree_regression import DecisionTreeRegression
-from surrogate_model.matern_process import MaternProcess
-from surrogate_model.lagrangian_linear_regression import LagrangianLinearRegression
-from surrogate_model.lagrangian_polynomial_regression import LagrangianPolynomialRegression
-
-```
-
-Select an optimizer by commenting out the unused surrorgate models in \_init\_:
-
-```python
-        # uncomment to select ONE:
-        #self.sm = RBFNetwork(kernel=RBF_kernel, epsilon=RBF_epsilon)       
-        #self.sm = Kriging(length_scale=K_length_scale, noise=K_noise)
-        #self.sm = GaussianProcess(length_scale=GP_length_scale,noise=GP_noise)  # select the surrogate model
-        self.sm = PolynomialRegression(degree=PR_degree)
-        #self.sm = PolynomialChaosExpansion(degree=PC_degree)
-        #self.sm = KNNRegression(n_neighbors=KNN_n_neighbors, weights=KNN_weights)
-        #self.sm = DecisionTreeRegression(max_depth=DTR_max_depth)
-```
 
 
 ## References
@@ -406,6 +465,5 @@ Select an optimizer by commenting out the unused surrorgate models in \_init\_:
 
 ## Publications and Integration
 This software works as a stand-alone implementation, and as a selection of optimizers integrated into AntennaCAT. Publications featuring the code as part of AntennaCAT will be added as they become public.
-
 
 
