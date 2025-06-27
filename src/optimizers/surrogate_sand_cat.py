@@ -2,13 +2,13 @@
 
 ##--------------------------------------------------------------------\
 #   surrogate_model_optimization
-#   './surrogate_model_optimization/src/surrogate_sand_cat.py'
+#   './surrogate_model_optimization/src/optimizers/surrogate_sand_cat.py'
 #   A basic sand cat swarm optimization class. See the README for
 #       publication details.
 #       
 #
 #   Author(s): Lauren Linkous, Jonathan Lundquist
-#   Last update: May 18, 2025
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 
