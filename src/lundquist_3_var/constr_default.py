@@ -1,14 +1,14 @@
 #! /usr/bin/python3
 
 ##--------------------------------------------------------------------\
-#   pso_basic_multi_glods_surrogate
-#   '.src/lundquist_3_var/constr_default.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/lundquist_3_var/constr_default.py'
 #   Function for default constraints. Called if user does not pass in 
 #       constraints for objective function or problem being optimized. 
 #
 #
 #   Author(s): Jonathan Lundquist, Lauren Linkous 
-#   Last update: June 28, 2024
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 
