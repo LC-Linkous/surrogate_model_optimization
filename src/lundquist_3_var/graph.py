@@ -1,13 +1,13 @@
 #! /usr/bin/python3
 
 ##-------------------------------------------------------------------------------\
-#   pso_basic_multi_glods_surrogate
-#   '.src/lundquist_3_var/graph.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/lundquist_3_var/graph.py'
 #   generates graphs for function based on constraints and configurations
 #   in-package demo for graphing the pareto front
 #
 #   Author(s): Lauren Linkous (LINKOUSLC@vcu.edu)
-#   Last update: May 25, 2024
+#   Last update: June 26, 2025
 ##-------------------------------------------------------------------------------\
 
 import numpy as np
