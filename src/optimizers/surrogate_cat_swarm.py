@@ -2,14 +2,14 @@
 
 ##--------------------------------------------------------------------\
 #   surrogate_model_optimization
-#   './surrogate_model_optimization/src/surrogate_cat_swarm.py'
+#   './surrogate_model_optimization/src/optimizers/surrogate_cat_swarm.py'
 #   A basic Cat Swarm Optimization class. This class follows the same 
 #       format as pso_python and pso_basic to make them interchangeable
 #       in function calls. 
 #       
 #
 #   Author(s): Lauren Linkous
-#   Last update: May 18, 2025
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 import numpy as np
