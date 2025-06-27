@@ -38,34 +38,32 @@ The surrogate model approximators were originally featured in [bayesian_optimiza
 
 ## Requirements
 
-This project requires numpy and pandas. 
+This project requires numpy and pandas for the optimization models. matplotlib is used for creating a preview of the mathematical functions used with the objective function calls. 
 
 Use 'pip install -r requirements.txt' to install the following dependencies:
 
 ```python
-contourpy==1.2.1
+contourpy==1.3.2
 cycler==0.12.1
-fonttools==4.51.0
-importlib_resources==6.4.0
-kiwisolver==1.4.5
-matplotlib==3.8.4
-numpy==1.26.4
-packaging==24.0
+fonttools==4.58.4
+kiwisolver==1.4.8
+matplotlib==3.10.3
+numpy==2.2.3
+packaging==25.0
 pandas==2.2.3
-pillow==10.3.0
-pyparsing==3.1.2
+pillow==11.2.1
+pyparsing==3.2.3
 python-dateutil==2.9.0.post0
 pytz==2025.1
-six==1.16.0
+six==1.17.0
 tzdata==2025.1
-zipp==3.18.1
 
 ```
 
 For manual installation:
 
 ```python
-pip install numpy, pandas 
+pip install numpy, pandas, matplotlib
 
 ```
 
