@@ -1,12 +1,12 @@
 #! /usr/bin/python3
 
 ##-------------------------------------------------------------------------------\
-#   pso_basic_multi_glods_surrogate
-#   '.src/himmelblau/configs_F.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/himmelblau/configs_F.py'
 #   configurations for function compatable with project optimizers
 #
 #   Author(s): Lauren Linkous (LINKOUSLC@vcu.edu)
-#   Last update: May 25, 2024
+#   Last update: June 26, 2025
 ##-------------------------------------------------------------------------------\
 
 
