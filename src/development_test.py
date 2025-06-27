@@ -113,7 +113,7 @@ class MainTest():
         7: Matern      8: Lagrangian Linear Regression  9:Lagrangian Polynomial Regression
         '''
 
-        BASE_OPT_CHOICE = 1
+        BASE_OPT_CHOICE = 2
         SURROGATE_OPT_CHOICE = 1
         APPROXIMATOR_CHOICE = 0
         
@@ -125,7 +125,7 @@ class MainTest():
         self.suppress_output = True   # Suppress the console output of particle swarm
         self.allow_update = True      # Allow objective call to update state 
         
-        useSurrogateModel  = True
+        useSurrogateModel  = False
         self.sm_approx = None       # the approximator 
         self.sm_opt = None          # the surrogate model optimizer
         self.sm_opt_df = None       # dataframe with surrogate model optimizer params
@@ -167,7 +167,6 @@ class MainTest():
             opt_params = {'NO_OF_PARTICLES': [50],    # Number of particles in swarm
                         'BOUNDARY': [1],              # int boundary 1 = random,      2 = reflecting
                                                       #              3 = absorbing,   4 = invisible
-                        'WEIGHTS': [[[0.7, 1.5, 0.5]]], # Update vector weights
                         'BETA':  [0.5] }              #Float constant controlling influence 
                                                       #       between the personal and global best positions
 
@@ -195,9 +194,9 @@ class MainTest():
             #4: sand_cat_python
             # Constant variables
             opt_params = {'NO_OF_PARTICLES': [8],     # Number of particles in swarm
-                        'BOUNDARY': [1],              # int boundary 1 = random,      2 = reflecting
+                        'BOUNDARY': [1]}              # int boundary 1 = random,      2 = reflecting
                                                       #              3 = absorbing,   4 = invisible
-                        'WEIGHTS': [[[2, 2.2, 2]]]}   # Update vector weights
+
 
             self.sm_opt_df = pd.DataFrame(opt_params)
             self.sm_opt  = sand_cat_swarm 
@@ -719,4 +718,19 @@ class MainTest():
 if __name__ == "__main__":
 
     mt = MainTest()
+
+    # get DF and put it to csv.
+    data = mt.b_opt.export_swarm()
+    data_df = pd.DataFrame(data)
+    print(data_df)
+    data_df.to_pickle('output_data_df.pkl') #, index=False)
+
+    # load csv
+    data_df = pd.read_pickle('output_data_df.pkl') #, index_col=False) 
+    mt.b_opt.import_swarm(data_df)
+
     mt.run()
+
+    # csv can't do 2d arrays
+    #TypeError: array(2) (numpy-scalar) is not JSON serializable at the moment
+ 
