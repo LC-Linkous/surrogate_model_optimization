@@ -1,8 +1,8 @@
 #! /usr/bin/python3
 
 ##--------------------------------------------------------------------\
-#   bayesian_optimization_python
-#   './bayesian_optimization_python/src/surrogate_models/RBF_network.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/surrogate_models/RBF_network.py'
 #   Radial Basis Function network surrogate model for optimization. 
 #
 #   Note: the underscores before the func names are to differentiate the 
@@ -10,7 +10,7 @@
 #
 #
 #   Author(s): Lauren Linkous 
-#   Last update: December 3, 2024
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 
