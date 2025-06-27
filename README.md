@@ -20,8 +20,15 @@ The surrogate model approximators were originally featured in [bayesian_optimiza
 ## Table of Contents
 * [Requirements](#requirements)
 * [Implementation](#implementation)
+    * [Initialization](#initialization)
     * [Constraint Handling](#constraint-handling)
-    * [Internal Objective Function Examples](#internal-objective-function-examples)
+    * [Boundary Types](#boundary-types)
+    * [Importing and Exporting Optimizer State](#importing-and-exporting-optimizer-state)
+    * [Multi-Objective Optimization](#multi-objective-optimization)
+    * [Objective Function Handling](#objective-function-handling)
+       * [Creating a Custom Objective Function](#creating-a-custom-objective-function)
+       * [Internal Objective Function Examples](#internal-objective-function-examples)
+    * [Target vs. Threshold Configuration](#target-vs-threshold-configuration)
 * [Example Testing](#example-implementations)
 * [References](#references)
 * [Publications and Integration](#publications-and-integration)
@@ -190,6 +197,32 @@ Users must create their own constraint function for their problems, if there are
 Most optimizers have 4 different types of bounds, Random (Particles that leave the area respawn), Reflection (Particles that hit the bounds reflect), Absorb (Particles that hit the bounds lose velocity in that direction), Invisible (Out of bound particles are no longer evaluated).
 
 Some updates have not incorporated appropriate handling for all boundary conditions. This bug is known and is being worked on. The most consistent boundary type at the moment is Random. If constraints are violated, but bounds are not, currently random bound rules are used to deal with this problem. 
+
+
+### Importing and Exporting Optimizer State
+
+Some optimizer information can be exported or imported. This varies based on each optimizer.
+
+Optimizer state can be exported at any step. When importing an optimizer state, the optimizer should be initialized first, and then the state information can be imported via a Python pickle file. Other methods can be used if custom code is written to handle preprocessing.
+
+
+Returning data from optimizer and saving to a .pkl file:
+```python
+    data = demo_optimizer.export_swarm()
+    data_df = pd.DataFrame(data)
+    print(data_df)
+    data_df.to_pickle('output_data_df.pkl')
+
+```
+
+
+Importing data from a .pkl file and importing it into the optimizer:
+```python
+    data_df = pd.read_pickle('output_data_df.pkl') 
+    demo_optimizer.import_swarm(data_df)
+
+```
+
 
 
 ### Multi-Objective Optimization
