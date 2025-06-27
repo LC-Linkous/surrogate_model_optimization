@@ -1,12 +1,12 @@
 #! /usr/bin/python3
 
 ##--------------------------------------------------------------------\
-#   bayesian_optimization_python
-#   './bayesian_optimization_python/src/surrogate_models/matern_process.py'
+#   surrogate_model_optimization
+#   './surrogate_model_optimization/src/surrogate_models/matern_process.py'
 #   Matern Process surrogate model for optimization. RBF generalization
 #
 #   Author(s): Lauren Linkous
-#   Last update: March 12, 2025
+#   Last update: June 26, 2025
 ##--------------------------------------------------------------------\
 
 import numpy as np
