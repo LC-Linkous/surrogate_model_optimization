@@ -804,8 +804,6 @@ class MainTest():
                                     obj_threshold=self.THRESHOLD, 
                                     useSurrogateModel=False, 
                                     surrogateOptimizer=None)   
-            print("BAYESIAN BASE SET")
-
 
         else:
             print("unknown surrogate model selected with option: " + str(BASE_OPT_CHOICE))
