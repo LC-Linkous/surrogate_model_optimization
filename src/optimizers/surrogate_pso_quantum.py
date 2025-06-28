@@ -26,7 +26,8 @@ class swarm:
     # dataFrame,
     # class obj,
     # bool, [int, int, ...]
-    # bool, class obj)  
+    # bool, class obj,
+    # int)  
     #  
     # opt_df contains class-specific tuning parameters
     # NO_OF_PARTICLES: int
@@ -77,6 +78,7 @@ class swarm:
         NO_OF_PARTICLES = int(opt_df['NO_OF_PARTICLES'][0])
         boundary = int(opt_df['BOUNDARY'][0])
         beta = float(opt_df['BETA'][0])
+        weights = np.array(opt_df['WEIGHTS'][0])
 
 
 
@@ -135,6 +137,7 @@ class swarm:
             self.F_Gb                   : Fitness value corresponding to the global best position.
             self.Pb                     : Personal best position for each particle.
             self.F_Pb                   : Fitness value corresponding to the personal best position for each particle.
+            self.weights                : Weights for the optimization process.
             self.targets                : Target values for the optimization process.
             self.maxit                  : Maximum number of iterations.
             self.E_TOL                  : Error tolerance.
@@ -157,6 +160,7 @@ class swarm:
             self.F_Gb = sys.maxsize*np.ones((1,self.output_size))                
             self.Pb = sys.maxsize*np.ones(np.shape(self.M))                 
             self.F_Pb = sys.maxsize*np.ones((NO_OF_PARTICLES,self.output_size))  
+            self.weights = np.array(weights) 
             self.targets = np.array(targets).reshape(-1, 1)                  
             self.maxit = maxit                                             
             self.E_TOL = E_TOL                                              
@@ -389,9 +393,9 @@ class swarm:
     def update_point(self,particle):
         #updates particle location. in quantum inspired algs, this merges the classical position& velocity update
         # duplicate locals to stick with eqs. in README
-        self.Mlast = 1*self.M[particle]    # save last loc
-        p = self.Pb[particle]              # personal best
-        g = self.Gb                        # global best
+        self.Mlast = self.weights[0][0]*self.M[particle]    # save last loc
+        p = self.weights[0][1]*self.Pb[particle]            # personal best
+        g = self.weights[0][2]*self.Gb   
         
         # Mean Best Position
         mb = self.beta* p + (1 - self.beta) * g
@@ -481,6 +485,7 @@ class swarm:
             # optimizer specfic
 
             'beta': [self.beta],
+            'weughts': [self.weights],
             'number_of_particles': [self.number_of_particles], 
             # shared format vars for AntennaCAT set
             'M': [self.M], 
@@ -520,6 +525,7 @@ class swarm:
         self.allow_update = int(swarm_export['allow_update'][0])    # BOOL as INT
 
         # optimizer specfic
+        self.weights = np.array(swarm_export['weights'][0])
         self.beta = float(swarm_export['beta'][0]) 
         self.number_of_particles = int(swarm_export['number_of_particles'][0]) 
 

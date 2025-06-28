@@ -168,8 +168,10 @@ class MainTest():
             opt_params = {'NO_OF_PARTICLES': [50],    # Number of particles in swarm
                         'BOUNDARY': [1],              # int boundary 1 = random,      2 = reflecting
                                                       #              3 = absorbing,   4 = invisible
-                        'BETA':  [0.5] }              #Float constant controlling influence 
+                        'BETA':  [0.5],              #Float constant controlling influence 
                                                       #       between the personal and global best positions
+                        'WEIGHTS': [[0.5, 0.7, 0.78]]} # always 3 values. 1: last location, 2: personal best, 3: global best
+
 
             self.sm_opt_df = pd.DataFrame(opt_params)
             self.sm_opt  = pso_q_swarm 
