@@ -37,7 +37,7 @@ class swarm:
     # SRD: float
     # CDC: int
     # SPC: bool
-    #              
+    # beta: float             
 
     def __init__(self,  lbound, ubound, targets,E_TOL, maxit,
                  obj_func, constr_func, 
@@ -45,7 +45,7 @@ class swarm:
                  parent=None, 
                  evaluate_threshold=False, obj_threshold=None, 
                  useSurrogateModel=False, surrogateOptimizer=None,
-                decimal_limit = 4): 
+                 decimal_limit = 4): 
         
 
         # Optional parent class func call to write out values that trigger constraint issues
