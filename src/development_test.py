@@ -33,6 +33,7 @@ from optimizers.surrogate_chicken_swarm import swarm as chicken_swarm
 from optimizers.surrogate_chicken_2015_improved import swarm as chicken_i15_swarm
 from optimizers.surrogate_chicken_quantum import swarm as chicken_q_swarm
 from optimizers.multi_glods.surrogate_multi_glods import multi_glods
+from optimizers.surrogate_bayesian import BayesianOptimization
 
 # SURROGATE MODEL OBJECTIVE FUNCTION FIT OPTIONS
 from surrogate_model.RBF_network import RBFNetwork
@@ -99,11 +100,12 @@ class MainTest():
         0: pso_python            1: pso_basic                     2: pso_quantum
         3: cat_swarm_python      4: sand_cat_python               5: cat_swarm_quantum
         6: chicken_swarm_python  7: 2015_improved_chicken_swarm   8: chicken_swarm_quantum
-        9: multi_glods_python
+        9: multi_glods_python    10: bayesian_optimization_python
 
-        NOTE: multi_glods_python canNOT (currently) be used as a base optimizer with 
-        a surrogate model optimizer. It can be used as the surrogate model optimizer.
-        All models CAN be used stand-alone without a surrogate model 
+        NOTE: multi_glods_python and bayesian_optimization_python canNOT (currently) be used as a 
+        base optimizer with a surrogate model optimizer. These can be used as the surrogate model optimizer.
+        All models CAN be used stand-alone without a surrogate model. This is due to the state machine setup for 
+        these two optimizers
         '''
 
         '''
@@ -114,11 +116,16 @@ class MainTest():
         # RBF can be finicky with some configurations. This is being worked on.
         '''
 
-        BASE_OPT_CHOICE = 2
-        SURROGATE_OPT_CHOICE = 1
-        APPROXIMATOR_CHOICE = 3
+        BASE_OPT_CHOICE = 3
+        SURROGATE_OPT_CHOICE = 10
+
+        # Select what cerates the surrogate models
+        # THIS selects the surrogate model shared between optimizers
+        APPROXIMATOR_CHOICE = 2
+        # THIS selects the surrogate model used by the BAYESIAN option, IF that is ued
+        BAYES_SM_OPTION = 3    
         
-        
+
         # OPTIMIZER INIT
         self.best_eval = 10      #usually set to 1 because anything higher is too many magnitutes to high to be useful
         parent = self            # NOTE: using 'None' for parents does not work with surrogate model
@@ -126,7 +133,7 @@ class MainTest():
         self.suppress_output = True   # Suppress the console output of particle swarm
         self.allow_update = True      # Allow objective call to update state 
         
-        useSurrogateModel  = False
+        useSurrogateModel  = True
         self.sm_approx = None       # the approximator 
         self.sm_opt = None          # the surrogate model optimizer
         self.sm_opt_df = None       # dataframe with surrogate model optimizer params
@@ -283,6 +290,103 @@ class MainTest():
             
             self.sm_opt_df = pd.DataFrame(opt_params)
             self.sm_opt  = multi_glods 
+
+        elif SURROGATE_OPT_CHOICE == 10:
+            # 10: bayesian_optimization_python
+            # the INTERNAL BAYESIAN SURROGATE APPROX FUNCS
+
+         
+            if BAYES_SM_OPTION == 0:
+                # RBF Network vars
+                RBF_kernel  = 'gaussian' #options: 'gaussian', 'multiquadric'
+                RBF_epsilon = 1.0
+                num_init_points = 1
+                sm_bayes = RBFNetwork(kernel=RBF_kernel, epsilon=RBF_epsilon)  
+                noError, errMsg = sm_bayes._check_configuration(num_init_points, RBF_kernel)
+
+            elif BAYES_SM_OPTION == 1:
+                # Gaussian Process vars
+                GP_noise = 1e-10
+                GP_length_scale = 1.0
+                num_init_points = 1
+                sm_bayes = GaussianProcess(length_scale=GP_length_scale,noise=GP_noise) 
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 2:
+                # Kriging vars
+                K_noise = 1e-10
+                K_length_scale = 1.0   
+                num_init_points = 2 
+                sm_bayes = Kriging(length_scale=K_length_scale, noise=K_noise)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 3:
+                # Polynomial Regression vars
+                PR_degree = 5
+                num_init_points = 1
+                sm_bayes = PolynomialRegression(degree=PR_degree)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 4:
+                # Polynomial Chaos Expansion vars
+                PC_degree = 5 
+                num_init_points = 1
+                sm_bayes = PolynomialChaosExpansion(degree=PC_degree)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 5:
+                # KNN regression vars
+                KNN_n_neighbors=3
+                KNN_weights='uniform'  #options: 'uniform', 'distance'
+                num_init_points = 1
+                sm_bayes = KNNRegression(n_neighbors=KNN_n_neighbors, weights=KNN_weights)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 6:
+                # Decision Tree Regression vars
+                DTR_max_depth = 5  # options: ints
+                num_init_points = 1
+                sm_bayes = DecisionTreeRegression(max_depth=DTR_max_depth)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 7:
+                # Matern Process vars
+                DTR_max_depth = 1  # options: ints
+                num_init_points = 1
+                MP_length_scale = 1.1
+                MP_noise = 1e-10
+                MP_nu = 3/2
+                sm_bayes = MaternProcess(length_scale=MP_length_scale, noise=MP_noise, nu=MP_nu)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 8:
+                # Lagrangian penalty linear regression vars
+                num_init_points = 2
+                LLReg_noise = 1e-10
+                LLReg_constraint_degree=1
+                sm_bayes = LagrangianLinearRegression(noise=LLReg_noise, constraint_degree=LLReg_constraint_degree)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 9:
+                # Lagrangian penalty polynomial regression vars
+                num_init_points = 2
+                LPReg_degree = 5
+                LPReg_noise = 1e-10
+                LPReg_constraint_degree = 3
+                sm_bayes = LagrangianPolynomialRegression(degree=LPReg_degree, noise=LPReg_noise, constraint_degree=LPReg_constraint_degree)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+
+            # Constant variables
+            xi = 0.01
+            n_restarts = 25
+
+            opt_params = {'XI': [xi],                   # exploration float
+                        'NUM_RESTARTS': [n_restarts],   # number of predition restarts
+                        'INIT_PTS': [num_init_points],  # initial number of samples
+                        'SM_MODEL': [sm_bayes]}         # the surrogate model class object
+            self.sm_opt_df = pd.DataFrame(opt_params)
+            self.sm_opt  = BayesianOptimization 
 
         else:
             print("unknown surrogate model selected with option: " + str(BASE_OPT_CHOICE))
@@ -594,8 +698,115 @@ class MainTest():
                                     parent=parent,
                                     evaluate_threshold=self.evaluate_threshold, 
                                     obj_threshold=self.THRESHOLD, 
-                                    useSurrogateModel=useSurrogateModel, 
-                                    surrogateOptimizer=self.sm_opt)   
+                                    useSurrogateModel=False, 
+                                    surrogateOptimizer=None)   
+        elif BASE_OPT_CHOICE == 10:
+            # 10: bayesian_optimization_python
+            # the INTERNAL BAYESIAN SURROGATE APPROX FUNCS
+
+         
+            if BAYES_SM_OPTION == 0:
+                # RBF Network vars
+                RBF_kernel  = 'gaussian' #options: 'gaussian', 'multiquadric'
+                RBF_epsilon = 1.0
+                num_init_points = 1
+                sm_bayes = RBFNetwork(kernel=RBF_kernel, epsilon=RBF_epsilon)  
+                noError, errMsg = sm_bayes._check_configuration(num_init_points, RBF_kernel)
+
+            elif BAYES_SM_OPTION == 1:
+                # Gaussian Process vars
+                GP_noise = 1e-10
+                GP_length_scale = 1.0
+                num_init_points = 1
+                sm_bayes = GaussianProcess(length_scale=GP_length_scale,noise=GP_noise) 
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 2:
+                # Kriging vars
+                K_noise = 1e-10
+                K_length_scale = 1.0   
+                num_init_points = 2 
+                sm_bayes = Kriging(length_scale=K_length_scale, noise=K_noise)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 3:
+                # Polynomial Regression vars
+                PR_degree = 5
+                num_init_points = 1
+                sm_bayes = PolynomialRegression(degree=PR_degree)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 4:
+                # Polynomial Chaos Expansion vars
+                PC_degree = 5 
+                num_init_points = 1
+                sm_bayes = PolynomialChaosExpansion(degree=PC_degree)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 5:
+                # KNN regression vars
+                KNN_n_neighbors=3
+                KNN_weights='uniform'  #options: 'uniform', 'distance'
+                num_init_points = 1
+                sm_bayes = KNNRegression(n_neighbors=KNN_n_neighbors, weights=KNN_weights)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 6:
+                # Decision Tree Regression vars
+                DTR_max_depth = 5  # options: ints
+                num_init_points = 1
+                sm_bayes = DecisionTreeRegression(max_depth=DTR_max_depth)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 7:
+                # Matern Process vars
+                DTR_max_depth = 1  # options: ints
+                num_init_points = 1
+                MP_length_scale = 1.1
+                MP_noise = 1e-10
+                MP_nu = 3/2
+                sm_bayes = MaternProcess(length_scale=MP_length_scale, noise=MP_noise, nu=MP_nu)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 8:
+                # Lagrangian penalty linear regression vars
+                num_init_points = 2
+                LLReg_noise = 1e-10
+                LLReg_constraint_degree=1
+                sm_bayes = LagrangianLinearRegression(noise=LLReg_noise, constraint_degree=LLReg_constraint_degree)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+            elif BAYES_SM_OPTION == 9:
+                # Lagrangian penalty polynomial regression vars
+                num_init_points = 2
+                LPReg_degree = 5
+                LPReg_noise = 1e-10
+                LPReg_constraint_degree = 3
+                sm_bayes = LagrangianPolynomialRegression(degree=LPReg_degree, noise=LPReg_noise, constraint_degree=LPReg_constraint_degree)
+                noError, errMsg = sm_bayes._check_configuration(num_init_points)
+
+
+            # Constant variables
+            xi = 0.01
+            n_restarts = 25
+
+            opt_params = {'XI': [xi],                   # exploration float
+                        'NUM_RESTARTS': [n_restarts],   # number of predition restarts
+                        'INIT_PTS': [num_init_points],  # initial number of samples
+                        'SM_MODEL': [sm_bayes]}         # the surrogate model class object
+
+            opt_df = pd.DataFrame(opt_params)
+            self.b_opt = BayesianOptimization(LB, UB, TARGETS, TOL, MAXIT,
+                                    func_F, constr_F,
+                                    opt_df,
+                                    parent=parent,
+                                    evaluate_threshold=self.evaluate_threshold, 
+                                    obj_threshold=self.THRESHOLD, 
+                                    useSurrogateModel=False, 
+                                    surrogateOptimizer=None)   
+            print("BAYESIAN BASE SET")
+
+
         else:
             print("unknown surrogate model selected with option: " + str(BASE_OPT_CHOICE))
             return
@@ -603,11 +814,12 @@ class MainTest():
 
 
     # SURROGATE MODEL FUNCS
+    # These are for creating and fitting the surrogate model that links the 2 optimizers
     # create the 'surrogate objective function' for the surrogate model optimizer to optimize   
     def fit_model(self, x, y):
         # call out to parent class to use surrogate model
         self.sm_approx.fit(x,y)
-        
+       
 
     def model_predict(self, x, output_size=None):
         # call out to parent class to use surrogate model
@@ -644,13 +856,16 @@ class MainTest():
         # re-converting values or storing duplicates, the surrogate optimizer
         # is set up here. 
 
+
         setup_sm_opt = surrogateOptimizer(self.LB, self.UB, self.TARGETS, self.sm_tol, self.sm_maxit,  
-                                                         obj_func=func_f, constr_func=self.constr_F, 
-                                                         opt_df=self.sm_opt_df,
-                                                         parent=self)
+                                                        obj_func=func_f, constr_func=self.constr_F, 
+                                                        opt_df=self.sm_opt_df,
+                                                        parent=self)
 
         return setup_sm_opt
 
+
+   
     def get_surrogate_model_settings(self):
         # returns the parameters for creating the surrogate model optimizer
         # the surrogate model optimizer is created new every time it is called
@@ -695,8 +910,9 @@ class MainTest():
             iter, eval = self.b_opt.get_convergence_data()
             if (eval < self.best_eval) and (eval != 0):
                 self.best_eval = eval
+
             if self.suppress_output:
-                if iter%100 ==0: #print out every 100th iteration update
+                if iter%10 ==0: #print out every 100th iteration update
                     print("*************************************************")
                     print("BASE OPTIMIZER Iteration")
                     print(iter)

@@ -99,9 +99,6 @@ class multi_glods:
                 THRESHOLD = np.array(obj_threshold).reshape(-1, 1) #np.array
         
 
-
-
-
         self.init, self.run_ctl, self.alg, \
             self.prob, self.ctl, self.state = \
                 one_time_init(NO_OF_VARS, LB, UB, TARGETS, E_TOL, R_TOL, MAXIT,
